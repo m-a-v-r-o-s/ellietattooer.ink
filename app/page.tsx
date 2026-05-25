@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 const STUDIO_LOGO =
   "https://ritualtattoo.gr/wp-content/uploads/2018/05/ritual_logo_banner_dark_150.png";
-const ELLIE_LOGO = "/bcbfa608-1571-47e2-96de-92ea475205f9.png";
 const ELLIE_PHOTO = "/Screenshot_2026-05-22_19-59-38.png";
 const HERO_BACKGROUND = "/hero-background.jpg";
 
@@ -50,8 +50,6 @@ type CartItem = Product & {
 };
 
 const PORTFOLIO_IMAGES = [
-  "Screenshot_2026-05-23_01-26-04.png",
-  "Screenshot_2026-05-23_01-26-15.png",
   "Screenshot_2026-05-23_01-26-22.png",
   "Screenshot_2026-05-23_01-26-32.png",
   "Screenshot_2026-05-23_01-26-52.png",
@@ -59,7 +57,6 @@ const PORTFOLIO_IMAGES = [
   "Screenshot_2026-05-23_01-27-15.png",
   "Screenshot_2026-05-23_01-27-37.png",
   "Screenshot_2026-05-23_01-27-45.png",
-  "Screenshot_2026-05-23_01-28-08.png",
   "Screenshot_2026-05-23_01-28-21.png",
   "Screenshot_2026-05-23_01-28-37.png",
   "Screenshot_2026-05-23_01-28-47.png",
@@ -85,7 +82,6 @@ const PORTFOLIO_IMAGES = [
   "Screenshot_2026-05-23_01-32-10.png",
   "Screenshot_2026-05-23_01-32-14.png",
   "Screenshot_2026-05-23_01-32-24.png",
-  "Screenshot_2026-05-23_01-32-35.png",
   "Screenshot_2026-05-23_01-32-39.png",
   "Screenshot_2026-05-23_01-32-46.png",
   "Screenshot_2026-05-23_01-33-01.png",
@@ -220,8 +216,6 @@ export default function EllieTattooer() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Pirata+One&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html { scroll-behavior: smooth; }
@@ -244,11 +238,11 @@ export default function EllieTattooer() {
           position: absolute;
           bottom: 0; left: 0;
           width: 0; height: 2px;
-          background: #c0392b;
+          background: #FFB3C1;
           transition: width 0.2s;
         }
         .nav-link:hover::after { width: 100%; }
-        .nav-link:hover { color: #c0392b; }
+        .nav-link:hover { color: #FFB3C1; }
 
         @keyframes shake {
           0%,100% { transform: translateX(0); }
@@ -274,7 +268,7 @@ export default function EllieTattooer() {
         .portfolio-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 3px;
+          gap: 6px;
         }
         .portfolio-item {
           aspect-ratio: 1;
@@ -288,14 +282,14 @@ export default function EllieTattooer() {
         }
         .portfolio-overlay {
           position: absolute; inset: 0;
-          background: rgba(192,57,43,0.85);
+          background: rgba(255,179,193,0.85);
           display: flex; align-items: center; justify-content: center;
           opacity: 0;
           transition: opacity 0.3s;
           font-family: 'Oswald', sans-serif;
           font-size: 14px;
           letter-spacing: 0.2em;
-          color: #fff;
+          color: #111;
           text-transform: uppercase;
         }
         .portfolio-item { cursor: pointer; }
@@ -346,8 +340,8 @@ export default function EllieTattooer() {
           transition: background 0.2s, color 0.2s;
         }
         .btn-primary:hover {
-          background: #c0392b;
-          border-color: #c0392b;
+          background: #FFB3C1;
+          border-color: #040404;
         }
 
         .btn-outline {
@@ -366,6 +360,25 @@ export default function EllieTattooer() {
         .btn-outline:hover {
           background: #111;
           color: #fff;
+        }
+
+        .btn-mint {
+          background: #92c8b7;
+          color: #111;
+          border: 2px solid #92c8b7;
+          padding: 10px 22px;
+          font-family: 'Oswald', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .btn-mint:hover {
+          background: #111;
+          color: #fff;
+          border-color: #111;
         }
 
         .size-btn {
@@ -409,7 +422,7 @@ export default function EllieTattooer() {
           letter-spacing: 0.1em;
           text-transform: uppercase;
         }
-        .ig-link:hover { color: #c0392b; }
+        .ig-link:hover { color: #FFB3C1; }
 
         .ig-avatar {
           width: 36px; height: 36px;
@@ -459,7 +472,7 @@ export default function EllieTattooer() {
         }
 
         .hero-section {
-          min-height: 90vh;
+          height: calc(100dvh - 72px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -473,7 +486,7 @@ export default function EllieTattooer() {
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
-          background-color: #111;
+          background-color: hsl(348, 100%, 86%);
         }
         .divider-line {
           width: 100%; height: 2px; background: #111;
@@ -494,7 +507,7 @@ export default function EllieTattooer() {
           position: "sticky",
           top: 0,
           zIndex: 100,
-          background: "#fecdbf",
+          background: "#fff7f7",
           overflow: "visible",
           borderBottom: "2px solid #111",
           boxShadow: navScrolled ? "0 2px 16px rgba(0,0,0,0.08)" : "none",
@@ -518,7 +531,7 @@ export default function EllieTattooer() {
             style={{ display: "flex", gap: 32, alignItems: "center" }}
           >
             <span className="nav-link" onClick={() => scrollTo("about")}>
-              About
+              CONTACT
             </span>
             <span
               className="nav-link"
@@ -527,16 +540,14 @@ export default function EllieTattooer() {
                 scrollTo("portfolio");
               }}
             >
-              Portfolio
+              GALLERY
             </span>
             <span className="nav-link" onClick={() => scrollTo("shop")}>
               Shop
             </span>
-            <span className="nav-link" onClick={() => scrollTo("contact")}>
-              Contact
-            </span>
+            
             <span className="nav-link" onClick={() => scrollTo("findme")}>
-              Find Me
+              STUDIO INFO
             </span>
           </div>
 
@@ -545,7 +556,7 @@ export default function EllieTattooer() {
             style={{
               position: "absolute",
               left: "50%",
-              top: "45%",
+              top: "28%",
               transform: "translate(-50%, -35%)",
               display: "flex",
               alignItems: "center",
@@ -554,10 +565,10 @@ export default function EllieTattooer() {
             }}
           >
             <img
-              src="/smalllogo.png"
+              src="/portfolio/betty.png"
               alt="Ellie Tattooer"
               style={{
-                height: 120,
+                height: 333,
                 width: "auto",
                 objectFit: "contain",
                 pointerEvents: "auto",
@@ -606,21 +617,7 @@ export default function EllieTattooer() {
             {/* Divider */}
             <div style={{ width: 1, height: 32, background: "#ddd" }} />
 
-            {/* Phone */}
-            <a
-              href="tel:+302107777230"
-              style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.08em",
-                color: "#111",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              +30 210 77 77 230
-            </a>
+            
 
             {/* Cart */}
             <button
@@ -686,61 +683,49 @@ export default function EllieTattooer() {
           style={{
             position: "relative",
             textAlign: "center",
-            padding: "60px 24px",
+            padding: "16px 24px",
             color: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
           }}
           className="fade-up"
         >
-          <p
-            style={{
-              fontFamily: "'Pirata One', cursive",
-              fontSize: 19,
-              letterSpacing: "0.3em",
-              color: "#fecdbf",
-              marginBottom: 24,
-            }}
-          >
-            — Currently at my home base, Ritual Tattoo Athens —
-          </p>
-          <img
-            src={ELLIE_LOGO}
+          <Image
+            src="/portfolio/elliebanner.png"
             alt="Ellie Tattooer"
+            width={900}
+            height={600}
+            preload={true}
             style={{
+              maxWidth: "min(900px, 100vw)",
+              width: "auto",
+              maxHeight: "calc(100dvh - 260px)",
+              height: "auto",
               display: "block",
-              width: "min(400px, 70vw)",
-              margin: "0 auto 32px",
+              margin: "0 auto",
             }}
           />
-          <h1
-            style={{
-              fontFamily: "'Pirata One', cursive",
-              fontWeight: 700,
-              fontSize: "clamp(48px, 10vw, 120px)",
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              lineHeight: 1,
-              color: "#fff",
-            }}
-          >
-            ELLIE
-            <br />
-            <span style={{ color: "#fecdbf" }}>TATTOOER</span>
-          </h1>
+          <div style={{ marginTop: 16, display: "inline-flex", flexDirection: "column", alignItems: "stretch" }}>
           <p
             style={{
-              fontFamily: "'Pirata One', cursive",
-              fontStyle: "italic",
+              fontFamily: "'oswald', sans-serif",
+              fontStyle: "normal",
+              fontWeight: 700,
               fontSize: 23,
-              marginTop: 24,
-              color: "#ccc",
+              color: "#ffffff",
               letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              textAlign: "center",
             }}
           >
-            American Traditional Tattooer
+            American Traditional Tattooing
           </p>
           <div
             style={{
-              marginTop: 40,
+              marginTop: 20,
               display: "flex",
               gap: 16,
               justifyContent: "center",
@@ -755,15 +740,15 @@ export default function EllieTattooer() {
               }}
               style={{ fontSize: 14 }}
             >
-              View Portfolio
+              View Gallery
             </button>
             <button
-              className="btn-outline"
+              className="btn-mint"
               onClick={() => scrollTo("shop")}
-              style={{ color: "#fff", borderColor: "#fff", fontSize: 14 }}
             >
               Shop Merch
             </button>
+          </div>
           </div>
         </div>
       </section>
@@ -771,52 +756,51 @@ export default function EllieTattooer() {
       {/* ABOUT */}
       <section
         id="about"
-        style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto" }}
+        style={{ padding: "100px 24px", background: "#92c8b7" }}
       >
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 80,
-            alignItems: "center",
-          }}
-        >
+  style={{
+    maxWidth: 1100,
+    margin: "0 auto",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 80,
+    alignItems: "center",
+  }}
+>
           <div>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontStyle: "italic",
-                color: "#c0392b",
+                color: "#000000",
                 fontSize: 17,
                 letterSpacing: "0.3em",
                 marginBottom: 12,
               }}
             >
-              IT'S ME
+              
             </p>
             <h2 className="section-title">
-              ELLIE
+              CONTACT &
               <br />
-              TATTOOER
+              INQUIRIES
             </h2>
-            <div className="red-divider" />
+            
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontSize: 21,
                 lineHeight: 1.8,
                 color: "#444",
                 marginTop: 8,
               }}
             >
-              - Athenea(n) born and bred <br />
-              - Based at Ritual Tattoo Athens but <br />
-              always open to guest spots around the world <br />- Specializing
-              in American Traditional Tattooes
+              You can reach me via <strong>Instagram DM</strong> or email to <strong>elliemavrou@gmail.com</strong> Thank you!
             </p>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontStyle: "italic",
                 fontSize: 19,
                 lineHeight: 1.8,
@@ -832,7 +816,7 @@ export default function EllieTattooer() {
                 className="btn-primary"
                 style={{ textDecoration: "none", display: "inline-block" }}
               >
-                Follow on Instagram
+                DM on Instagram
               </a>
             </div>
           </div>
@@ -869,10 +853,10 @@ export default function EllieTattooer() {
         </div>
       </section>
 
-      <div style={{ borderTop: "2px solid #111" }} />
+      
 
       {/* PORTFOLIO */}
-      <section id="portfolio" style={{ padding: "100px 0" }}>
+      <section id="portfolio" style={{ padding: "100px 0", background: "#92c8b7" }}>
         <div
           style={{
             maxWidth: 1200,
@@ -882,26 +866,13 @@ export default function EllieTattooer() {
             textAlign: "center",
           }}
         >
+          <h2 className="section-title">GALLERY</h2>
+          
           <p
             style={{
-              fontFamily: "'Pirata One', cursive",
-              fontStyle: "italic",
-              color: "#c0392b",
-              fontSize: 17,
-              letterSpacing: "0.3em",
-              marginBottom: 12,
-            }}
-          >
-            THE WORK
-          </p>
-          <h2 className="section-title">PORTFOLIO</h2>
-          <div className="red-divider" style={{ margin: "16px auto" }} />
-          <p
-            style={{
-              fontFamily: "'Pirata One', cursive",
+              fontFamily: "'oswald', sans-serif",
               fontSize: 20,
               color: "#555",
-              fontStyle: "italic",
             }}
           >
             A selection of my latest tattooes.
@@ -920,7 +891,7 @@ export default function EllieTattooer() {
             >
               <img
                 src={`/portfolio/${fileName}`}
-                alt={`Portfolio ${idx + 1}`}
+                alt={`Gallery ${idx + 1}`}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
               <div className="portfolio-overlay">View</div>
@@ -930,7 +901,7 @@ export default function EllieTattooer() {
         <div style={{ textAlign: "center", marginTop: 18 }}>
           {PORTFOLIO_IMAGES.length > 27 && (
             <button
-              className="btn-outline"
+              className="btn-primary"
               onClick={() => setShowAllPortfolio((s) => !s)}
             >
               {showAllPortfolio
@@ -957,7 +928,7 @@ export default function EllieTattooer() {
             </button>
             <img
               src={`/portfolio/${PORTFOLIO_IMAGES[lightboxIndex]}`}
-              alt={`Portfolio ${lightboxIndex + 1}`}
+              alt={`Gallery ${lightboxIndex + 1}`}
               className="lightbox-img"
               onClick={(e) => e.stopPropagation()}
             />
@@ -972,7 +943,7 @@ export default function EllieTattooer() {
         id="shop"
         style={{
           padding: "100px 24px",
-          background: "#fecdbf",
+          background: "#aaf0b4",
           position: "relative",
         }}
       >
@@ -980,7 +951,7 @@ export default function EllieTattooer() {
           style={{
             position: "absolute",
             inset: 0,
-            background: "rgba(255,255,255,0.95)",
+            background: "rgba(255, 255, 255, 0.95)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1004,7 +975,7 @@ export default function EllieTattooer() {
             </p>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontSize: 20,
                 color: "#555",
                 margin: 0,
@@ -1018,7 +989,7 @@ export default function EllieTattooer() {
           <div style={{ textAlign: "center", marginBottom: 60 }}>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontStyle: "italic",
                 color: "#c0392b",
                 fontSize: 17,
@@ -1029,7 +1000,7 @@ export default function EllieTattooer() {
               ELLIE TATTOOER
             </p>
             <h2 className="section-title">MERCH SHOP</h2>
-            <div className="red-divider" style={{ margin: "16px auto" }} />
+            
           </div>
           <div
             style={{
@@ -1132,7 +1103,7 @@ export default function EllieTattooer() {
                   </div>
                   <p
                     style={{
-                      fontFamily: "'Pirata One', cursive",
+                      fontFamily: "'oswald', sans-serif",
                       fontStyle: "italic",
                       color: "#666",
                       fontSize: 17,
@@ -1180,7 +1151,7 @@ export default function EllieTattooer() {
                   {!selectedSizes[product.id] && (
                     <p
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontStyle: "italic",
                         fontSize: 15,
                         color: "#999",
@@ -1201,23 +1172,23 @@ export default function EllieTattooer() {
       <div style={{ borderTop: "2px solid #111" }} />
 
       {/* CONTACT + FIND ME */}
-      <section id="contact" style={{ padding: "100px 24px" }}>
+      <section id="contact" style={{ padding: "100px 24px", background: "#92c8b7" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 60 }}>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontStyle: "italic",
-                color: "#c0392b",
+                color: "#1A1A1A",
                 fontSize: 17,
                 letterSpacing: "0.3em",
                 marginBottom: 12,
               }}
             >
-              GET IN TOUCH
+              
             </p>
-            <h2 className="section-title">CONTACT &amp; FIND ME</h2>
-            <div className="red-divider" style={{ margin: "16px auto" }} />
+            <h2 className="section-title">STUDIO INFO</h2>
+            
           </div>
           <div
             style={{
@@ -1239,7 +1210,7 @@ export default function EllieTattooer() {
                   marginBottom: 32,
                 }}
               >
-                Studio Info
+              
               </h3>
               <div
                 style={{
@@ -1276,7 +1247,7 @@ export default function EllieTattooer() {
                     height="18"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#c0392b"
+                    stroke="#1A1A1A"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1298,7 +1269,7 @@ export default function EllieTattooer() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontSize: 18,
                         color: "#555",
                         marginTop: 2,
@@ -1318,7 +1289,7 @@ export default function EllieTattooer() {
                     height="18"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#c0392b"
+                    stroke="#1A1A1A"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1340,7 +1311,7 @@ export default function EllieTattooer() {
                     <a
                       href="tel:+302107777230"
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontSize: 18,
                         color: "#555",
                         textDecoration: "none",
@@ -1353,7 +1324,7 @@ export default function EllieTattooer() {
                     <a
                       href="tel:+306978907800"
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontSize: 18,
                         color: "#555",
                         textDecoration: "none",
@@ -1371,7 +1342,7 @@ export default function EllieTattooer() {
                     height="18"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#c0392b"
+                    stroke="#1A1A1A"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1393,7 +1364,7 @@ export default function EllieTattooer() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontSize: 18,
                         color: "#555",
                         marginTop: 2,
@@ -1413,7 +1384,7 @@ export default function EllieTattooer() {
                     height="18"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#c0392b"
+                    stroke="#92c8b7"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1432,36 +1403,10 @@ export default function EllieTattooer() {
                         fontWeight: 600,
                       }}
                     >
-                      INSTAGRAM
+                      
                     </p>
-                    <a
-                      href="https://www.instagram.com/ellie_tattooer/"
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        fontFamily: "'Pirata One', cursive",
-                        fontSize: 18,
-                        color: "#555",
-                        textDecoration: "none",
-                        display: "block",
-                        marginTop: 2,
-                      }}
-                    >
-                      @ellie_tattooer
-                    </a>
-                    <a
-                      href="https://www.instagram.com/ritualtattooathens/"
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        fontFamily: "'Pirata One', cursive",
-                        fontSize: 18,
-                        color: "#555",
-                        textDecoration: "none",
-                      }}
-                    >
-                      @ritualtattooathens
-                    </a>
+                    
+                    
                   </div>
                 </div>
               </div>
@@ -1493,7 +1438,7 @@ export default function EllieTattooer() {
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#c0392b"
+                  stroke="#1A1A1A"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1520,10 +1465,10 @@ export default function EllieTattooer() {
       {/* FOOTER */}
       <footer
         style={{
-          background: "#111",
+          background: "#fff7f7",
           color: "#fff",
           padding: "28px 24px",
-          borderTop: "3px solid #c0392b",
+          borderTop: "3px solid #1A1A1A",
         }}
       >
         <div
@@ -1542,7 +1487,7 @@ export default function EllieTattooer() {
               fontFamily: "'Oswald', sans-serif",
               fontSize: 12,
               letterSpacing: "0.15em",
-              color: "#aaa",
+              color: "#1A1A1A",
             }}
           >
             © 2026 ELLIE TATTOOER. ALL RIGHTS RESERVED.
@@ -1552,7 +1497,7 @@ export default function EllieTattooer() {
               fontFamily: "'Oswald', sans-serif",
               fontSize: 12,
               letterSpacing: "0.15em",
-              color: "#aaa",
+              color: "#1A1A1A",
             }}
           >
             © 2026 AKOS DIGITAL. ALL RIGHTS RESERVED.
@@ -1634,7 +1579,7 @@ export default function EllieTattooer() {
               </svg>
               <p
                 style={{
-                  fontFamily: "'Pirata One', cursive",
+                  fontFamily: "'oswald', sans-serif",
                   fontStyle: "italic",
                   color: "#aaa",
                   fontSize: 19,
@@ -1670,7 +1615,7 @@ export default function EllieTattooer() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "'Pirata One', cursive",
+                        fontFamily: "'oswald', sans-serif",
                         fontSize: 16,
                         color: "#888",
                         marginTop: 2,
@@ -1757,7 +1702,7 @@ export default function EllieTattooer() {
             </button>
             <p
               style={{
-                fontFamily: "'Pirata One', cursive",
+                fontFamily: "'oswald', sans-serif",
                 fontStyle: "italic",
                 fontSize: 15,
                 color: "#aaa",
