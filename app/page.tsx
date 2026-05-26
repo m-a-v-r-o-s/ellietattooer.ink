@@ -152,6 +152,7 @@ export default function EllieTattooer() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 10);
@@ -267,8 +268,14 @@ export default function EllieTattooer() {
 
         .portfolio-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-          gap: 6px;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 3px;
+        }
+        @media (min-width: 640px) {
+          .portfolio-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 6px;
+          }
         }
         .portfolio-item {
           aspect-ratio: 1;
@@ -495,9 +502,49 @@ export default function EllieTattooer() {
           width: 60px; height: 4px; background: #c0392b; margin: 16px 0;
         }
 
+        .about-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 80px;
+          align-items: center;
+        }
+        .two-col-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 60px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .about-grid {
+            grid-template-columns: 1fr;
+            gap: 48px;
+          }
+          .two-col-grid {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
+        }
+
+        .mobile-menu-btn { display: none; }
+        .mobile-nav { display: none; }
+
         @media (max-width: 768px) {
           .nav-desktop { display: none !important; }
           .nav-right-desktop { display: none !important; }
+          .mobile-menu-btn { display: flex !important; }
+          .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 72px;
+            left: 0;
+            right: 0;
+            background: #fff7f7;
+            border-bottom: 2px solid #111;
+            padding: 16px 24px;
+            gap: 16px;
+            z-index: 99;
+          }
         }
       `}</style>
 
@@ -574,6 +621,38 @@ export default function EllieTattooer() {
                 pointerEvents: "auto",
               }}
             />
+          </div>
+
+          {/* MOBILE RIGHT: hamburger + cart */}
+          <div
+            className="mobile-menu-btn"
+            style={{ alignItems: "center", gap: 12 }}
+          >
+            <button
+              onClick={handleCartClick}
+              className={cartShake ? "cart-shake" : ""}
+              style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 4 }}
+              title="Cart"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+              {totalItems > 0 && (
+                <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Oswald', sans-serif" }}>
+                  {totalItems}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen((o) => !o)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", flexDirection: "column", gap: 5 }}
+              title="Menu"
+            >
+              <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+              <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 0.2s" }} />
+              <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+            </button>
           </div>
 
           {/* RIGHT */}
@@ -673,6 +752,16 @@ export default function EllieTattooer() {
         </div>
       </nav>
 
+      {/* MOBILE NAV DROPDOWN */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav">
+          <span className="nav-link" onClick={() => { scrollTo("about"); setMobileMenuOpen(false); }}>CONTACT</span>
+          <span className="nav-link" onClick={() => { setShowAllPortfolio(true); scrollTo("portfolio"); setMobileMenuOpen(false); }}>GALLERY</span>
+          <span className="nav-link" onClick={() => { scrollTo("shop"); setMobileMenuOpen(false); }}>SHOP</span>
+          <span className="nav-link" onClick={() => { scrollTo("findme"); setMobileMenuOpen(false); }}>STUDIO INFO</span>
+        </div>
+      )}
+
       {/* HERO */}
       <section className="hero-section">
         <div
@@ -759,15 +848,9 @@ export default function EllieTattooer() {
         style={{ padding: "100px 24px", background: "#92c8b7" }}
       >
         <div
-  style={{
-    maxWidth: 1100,
-    margin: "0 auto",
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 80,
-    alignItems: "center",
-  }}
->
+          className="about-grid"
+          style={{ maxWidth: 1100, margin: "0 auto" }}
+        >
           <div>
             <p
               style={{
@@ -834,6 +917,8 @@ export default function EllieTattooer() {
                 <img
                   src={ELLIE_PHOTO}
                   alt="Ellie Tattooer"
+                  loading="lazy"
+                  decoding="async"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
@@ -889,10 +974,12 @@ export default function EllieTattooer() {
                 if (e.key === "Enter") setLightboxIndex(idx);
               }}
             >
-              <img
+              <Image
                 src={`/portfolio/${fileName}`}
                 alt={`Gallery ${idx + 1}`}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                fill
+                sizes="(max-width: 640px) 25vw, 180px"
+                style={{ objectFit: "cover" }}
               />
               <div className="portfolio-overlay">View</div>
             </div>
@@ -1190,14 +1277,7 @@ export default function EllieTattooer() {
             <h2 className="section-title">STUDIO INFO</h2>
             
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 60,
-              alignItems: "start",
-            }}
-          >
+          <div className="two-col-grid">
             {/* Contact Info */}
             <div id="findme">
               <h3
