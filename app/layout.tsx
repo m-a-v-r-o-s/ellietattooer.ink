@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ellie Tattooer",
+  title: "★ ELLIE TATTOOER ★",
   description: "American Traditional Tattooing",
 };
 
