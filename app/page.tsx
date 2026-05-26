@@ -525,13 +525,34 @@ export default function EllieTattooer() {
           }
         }
 
+        .shop-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 32px;
+        }
+        @media (max-width: 768px) {
+          .shop-grid {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 16px;
+            padding-bottom: 12px;
+            -webkit-overflow-scrolling: touch;
+          }
+          .shop-grid > * {
+            flex: 0 0 75vw;
+          }
+        }
+
         .mobile-menu-btn { display: none; }
+        .mobile-cart-btn { display: none; }
         .mobile-nav { display: none; }
 
         @media (max-width: 768px) {
           .nav-desktop { display: none !important; }
           .nav-right-desktop { display: none !important; }
           .mobile-menu-btn { display: flex !important; }
+          .mobile-cart-btn { display: flex !important; }
           .mobile-nav {
             display: flex;
             flex-direction: column;
@@ -623,37 +644,35 @@ export default function EllieTattooer() {
             />
           </div>
 
-          {/* MOBILE RIGHT: hamburger + cart */}
-          <div
+          {/* MOBILE LEFT: hamburger */}
+          <button
             className="mobile-menu-btn"
-            style={{ alignItems: "center", gap: 12 }}
+            onClick={() => setMobileMenuOpen((o) => !o)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexDirection: "column", gap: 5 }}
+            title="Menu"
           >
-            <button
-              onClick={handleCartClick}
-              className={cartShake ? "cart-shake" : ""}
-              style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 4 }}
-              title="Cart"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              {totalItems > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Oswald', sans-serif" }}>
-                  {totalItems}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", flexDirection: "column", gap: 5 }}
-              title="Menu"
-            >
-              <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-              <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 0.2s" }} />
-              <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
-            </button>
-          </div>
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 0.2s" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+          </button>
+
+          {/* MOBILE RIGHT: cart */}
+          <button
+            className={`mobile-cart-btn${cartShake ? " cart-shake" : ""}`}
+            onClick={handleCartClick}
+            style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 4 }}
+            title="Cart"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            {totalItems > 0 && (
+              <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Oswald', sans-serif" }}>
+                {totalItems}
+              </span>
+            )}
+          </button>
 
           {/* RIGHT */}
           <div
@@ -1089,13 +1108,7 @@ export default function EllieTattooer() {
             <h2 className="section-title">MERCH SHOP</h2>
             
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: 32,
-            }}
-          >
+          <div className="shop-grid">
             {PRODUCTS.map((product) => (
               <div key={product.id} className="product-card">
                 {/* Product Image */}
