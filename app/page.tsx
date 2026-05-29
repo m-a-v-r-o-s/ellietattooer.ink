@@ -1,37 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import {
+  SHIPPING_ZONES,
+  MAX_PER_ORDER,
+  INTERNATIONAL_DM_URL,
+} from "@/lib/shop";
+import { zoneFromPostalCode } from "@/lib/postal-zones";
 
 const STUDIO_LOGO =
   "https://ritualtattoo.gr/wp-content/uploads/2018/05/ritual_logo_banner_dark_150.png";
-const ELLIE_PHOTO = "/Screenshot_2026-05-22_19-59-38.png";
-const HERO_BACKGROUND = "/hero-background.jpg";
+const ELLIE_PHOTO = "/Screenshot_2026-05-22_19-59-38.webp";
 
 const PRODUCTS = [
   {
     id: 1,
-    name: "FLASH TEE",
-    price: 35,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    description: "TBD",
-    image: null,
-  },
-  {
-    id: 2,
-    name: "DRAGON HOODIE",
-    price: 65,
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    description: "TBD",
-    image: null,
-  },
-  {
-    id: 3,
-    name: "TATTOO FLASH PRINT",
-    price: 20,
-    sizes: ["A4", "A3"],
-    description: "TBD",
-    image: null,
+    name: "BACKPIECE PRINT 50 × 70 cm",
+    basePrice: 60,
+    price: 74.40,
+    sizes: ["50×70CM"],
+    images: ["/portfolio/Backpiece-print.webp", "/portfolio/Backpiece-print2.webp"],
+    makingOf: "https://www.instagram.com/p/DWwoJxrjTiL/",
   },
 ];
 
@@ -39,9 +29,10 @@ type Product = {
   id: number;
   name: string;
   price: number;
+  basePrice?: number;
   sizes: string[];
-  description: string;
-  image: string | null;
+  images?: string[];
+  makingOf?: string;
 };
 
 type CartItem = Product & {
@@ -50,113 +41,124 @@ type CartItem = Product & {
 };
 
 const PORTFOLIO_IMAGES = [
-  "Screenshot_2026-05-23_01-26-22.png",
-  "Screenshot_2026-05-23_01-26-32.png",
-  "Screenshot_2026-05-23_01-26-52.png",
-  "Screenshot_2026-05-23_01-27-01.png",
-  "Screenshot_2026-05-23_01-27-15.png",
-  "Screenshot_2026-05-23_01-27-37.png",
-  "Screenshot_2026-05-23_01-27-45.png",
-  "Screenshot_2026-05-23_01-28-21.png",
-  "Screenshot_2026-05-23_01-28-37.png",
-  "Screenshot_2026-05-23_01-28-47.png",
-  "Screenshot_2026-05-23_01-28-57.png",
-  "Screenshot_2026-05-23_01-29-05.png",
-  "Screenshot_2026-05-23_01-29-12.png",
-  "Screenshot_2026-05-23_01-29-26.png",
-  "Screenshot_2026-05-23_01-29-44.png",
-  "Screenshot_2026-05-23_01-30-00.png",
-  "Screenshot_2026-05-23_01-30-15.png",
-  "Screenshot_2026-05-23_01-30-21.png",
-  "Screenshot_2026-05-23_01-30-33.png",
-  "Screenshot_2026-05-23_01-30-41.png",
-  "Screenshot_2026-05-23_01-30-48.png",
-  "Screenshot_2026-05-23_01-30-53.png",
-  "Screenshot_2026-05-23_01-31-07.png",
-  "Screenshot_2026-05-23_01-31-23.png",
-  "Screenshot_2026-05-23_01-31-29.png",
-  "Screenshot_2026-05-23_01-31-38.png",
-  "Screenshot_2026-05-23_01-31-43.png",
-  "Screenshot_2026-05-23_01-31-52.png",
-  "Screenshot_2026-05-23_01-32-04.png",
-  "Screenshot_2026-05-23_01-32-10.png",
-  "Screenshot_2026-05-23_01-32-14.png",
-  "Screenshot_2026-05-23_01-32-24.png",
-  "Screenshot_2026-05-23_01-32-39.png",
-  "Screenshot_2026-05-23_01-32-46.png",
-  "Screenshot_2026-05-23_01-33-01.png",
-  "Screenshot_2026-05-23_01-33-13.png",
-  "Screenshot_2026-05-23_01-33-33.png",
-  "Screenshot_2026-05-23_01-33-37.png",
-  "Screenshot_2026-05-23_01-33-42.png",
-  "Screenshot_2026-05-23_01-33-51.png",
-  "Screenshot_2026-05-23_01-34-01.png",
-  "Screenshot_2026-05-23_01-34-09.png",
-  "Screenshot_2026-05-23_01-34-18.png",
-  "Screenshot_2026-05-23_01-34-24.png",
-  "Screenshot_2026-05-23_01-34-31.png",
-  "Screenshot_2026-05-23_01-34-42.png",
-  "Screenshot_2026-05-23_01-34-52.png",
-  "Screenshot_2026-05-23_01-35-01.png",
-  "Screenshot_2026-05-23_01-35-17.png",
-  "Screenshot_2026-05-23_01-35-31.png",
-  "Screenshot_2026-05-23_01-35-42.png",
-  "Screenshot_2026-05-23_01-35-54.png",
-  "Screenshot_2026-05-23_01-36-02.png",
-  "Screenshot_2026-05-23_01-36-09.png",
-  "Screenshot_2026-05-23_01-36-23.png",
-  "Screenshot_2026-05-23_01-36-29.png",
-  "Screenshot_2026-05-23_01-36-36.png",
-  "Screenshot_2026-05-23_01-36-45.png",
-  "Screenshot_2026-05-23_01-36-50.png",
-  "Screenshot_2026-05-23_01-37-01.png",
-  "Screenshot_2026-05-23_01-37-14.png",
-  "Screenshot_2026-05-23_01-37-19.png",
-  "Screenshot_2026-05-23_01-37-26.png",
-  "Screenshot_2026-05-23_01-37-39.png",
-  "Screenshot_2026-05-23_01-37-51.png",
-  "Screenshot_2026-05-23_01-38-04.png",
-  "Screenshot_2026-05-23_01-38-12.png",
-  "Screenshot_2026-05-23_01-38-20.png",
-  "Screenshot_2026-05-23_01-38-23.png",
-  "Screenshot_2026-05-23_01-38-30.png",
-  "Screenshot_2026-05-23_01-38-41.png",
-  "Screenshot_2026-05-23_01-38-54.png",
-  "Screenshot_2026-05-23_01-39-00.png",
-  "Screenshot_2026-05-23_01-39-07.png",
-  "Screenshot_2026-05-23_01-39-11.png",
-  "Screenshot_2026-05-23_01-39-16.png",
-  "Screenshot_2026-05-23_01-39-33.png",
-  "Screenshot_2026-05-23_01-39-39.png",
-  "Screenshot_2026-05-23_01-39-48.png",
-  "Screenshot_2026-05-23_01-39-52.png",
-  "Screenshot_2026-05-23_01-39-57.png",
-  "Screenshot_2026-05-23_01-40-04.png",
-  "Screenshot_2026-05-23_01-40-11.png",
-  "Screenshot_2026-05-23_01-40-14.png",
-  "Screenshot_2026-05-23_01-40-19.png",
-  "Screenshot_2026-05-23_01-40-24.png",
-  "Screenshot_2026-05-23_01-40-29.png",
-  "Screenshot_2026-05-23_01-40-33.png",
-  "Screenshot_2026-05-23_01-40-41.png",
+  "Screenshot_2026-05-29_03-06-19.webp",
+  "Screenshot_2026-05-29_03-06-39.webp",
+  "Screenshot_2026-05-29_03-07-17.webp",
+  "Screenshot_2026-05-29_03-07-47.webp",
+  "Screenshot_2026-05-29_03-08-49.webp",
+  "Screenshot_2026-05-23_01-26-22.webp",
+  "Screenshot_2026-05-23_01-26-32.webp",
+  "Screenshot_2026-05-23_01-26-52.webp",
+  "Screenshot_2026-05-23_01-27-01.webp",
+  "Screenshot_2026-05-23_01-27-15.webp",
+  "Screenshot_2026-05-23_01-27-37.webp",
+  "Screenshot_2026-05-23_01-27-45.webp",
+  "Screenshot_2026-05-23_01-28-21.webp",
+  "Screenshot_2026-05-23_01-28-37.webp",
+  "Screenshot_2026-05-23_01-28-47.webp",
+  "Screenshot_2026-05-23_01-28-57.webp",
+  "Screenshot_2026-05-23_01-29-05.webp",
+  "Screenshot_2026-05-23_01-29-12.webp",
+  "Screenshot_2026-05-23_01-29-26.webp",
+  "Screenshot_2026-05-23_01-29-44.webp",
+  "Screenshot_2026-05-23_01-30-00.webp",
+  "Screenshot_2026-05-23_01-30-15.webp",
+  "Screenshot_2026-05-23_01-30-21.webp",
+  "Screenshot_2026-05-23_01-30-33.webp",
+  "Screenshot_2026-05-23_01-30-41.webp",
+  "Screenshot_2026-05-23_01-30-48.webp",
+  "Screenshot_2026-05-23_01-30-53.webp",
+  "Screenshot_2026-05-23_01-31-07.webp",
+  "Screenshot_2026-05-23_01-31-23.webp",
+  "Screenshot_2026-05-23_01-31-29.webp",
+  "Screenshot_2026-05-23_01-31-38.webp",
+  "Screenshot_2026-05-23_01-31-43.webp",
+  "Screenshot_2026-05-23_01-31-52.webp",
+  "Screenshot_2026-05-23_01-32-04.webp",
+  "Screenshot_2026-05-23_01-32-10.webp",
+  "Screenshot_2026-05-23_01-32-14.webp",
+  "Screenshot_2026-05-23_01-32-24.webp",
+  "Screenshot_2026-05-23_01-32-39.webp",
+  "Screenshot_2026-05-23_01-32-46.webp",
+  "Screenshot_2026-05-23_01-33-01.webp",
+  "Screenshot_2026-05-23_01-33-13.webp",
+  "Screenshot_2026-05-23_01-33-33.webp",
+  "Screenshot_2026-05-23_01-33-37.webp",
+  "Screenshot_2026-05-23_01-33-42.webp",
+  "Screenshot_2026-05-23_01-33-51.webp",
+  "Screenshot_2026-05-23_01-34-01.webp",
+  "Screenshot_2026-05-23_01-34-09.webp",
+  "Screenshot_2026-05-23_01-34-18.webp",
+  "Screenshot_2026-05-23_01-34-24.webp",
+  "Screenshot_2026-05-23_01-34-31.webp",
+  "Screenshot_2026-05-23_01-34-42.webp",
+  "Screenshot_2026-05-23_01-34-52.webp",
+  "Screenshot_2026-05-23_01-35-01.webp",
+  "Screenshot_2026-05-23_01-35-17.webp",
+  "Screenshot_2026-05-23_01-35-31.webp",
+  "Screenshot_2026-05-23_01-35-42.webp",
+  "Screenshot_2026-05-23_01-35-54.webp",
+  "Screenshot_2026-05-23_01-36-02.webp",
+  "Screenshot_2026-05-23_01-36-09.webp",
+  "Screenshot_2026-05-23_01-36-23.webp",
+  "Screenshot_2026-05-23_01-36-29.webp",
+  "Screenshot_2026-05-23_01-36-36.webp",
+  "Screenshot_2026-05-23_01-36-45.webp",
+  "Screenshot_2026-05-23_01-36-50.webp",
+  "Screenshot_2026-05-23_01-37-01.webp",
+  "Screenshot_2026-05-23_01-37-14.webp",
+  "Screenshot_2026-05-23_01-37-19.webp",
+  "Screenshot_2026-05-23_01-37-26.webp",
+  "Screenshot_2026-05-23_01-37-39.webp",
+  "Screenshot_2026-05-23_01-37-51.webp",
+  "Screenshot_2026-05-23_01-38-04.webp",
+  "Screenshot_2026-05-23_01-38-12.webp",
+  "Screenshot_2026-05-23_01-38-20.webp",
+  "Screenshot_2026-05-23_01-38-23.webp",
+  "Screenshot_2026-05-23_01-38-30.webp",
+  "Screenshot_2026-05-23_01-38-41.webp",
+  "Screenshot_2026-05-23_01-38-54.webp",
+  "Screenshot_2026-05-23_01-39-00.webp",
+  "Screenshot_2026-05-23_01-39-07.webp",
+  "Screenshot_2026-05-23_01-39-11.webp",
+  "Screenshot_2026-05-23_01-39-16.webp",
+  "Screenshot_2026-05-23_01-39-33.webp",
+  "Screenshot_2026-05-23_01-39-39.webp",
+  "Screenshot_2026-05-23_01-39-48.webp",
+  "Screenshot_2026-05-23_01-39-52.webp",
+  "Screenshot_2026-05-23_01-39-57.webp",
+  "Screenshot_2026-05-23_01-40-04.webp",
+  "Screenshot_2026-05-23_01-40-11.webp",
+  "Screenshot_2026-05-23_01-40-14.webp",
+  "Screenshot_2026-05-23_01-40-19.webp",
+  "Screenshot_2026-05-23_01-40-24.webp",
+  "Screenshot_2026-05-23_01-40-29.webp",
+  "Screenshot_2026-05-23_01-40-33.webp",
+  "Screenshot_2026-05-23_01-40-41.webp",
 ];
 
 export default function EllieTattooer() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartShake, setCartShake] = useState(false);
-  const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>(
-    {},
-  );
   const [addedFeedback, setAddedFeedback] = useState<number | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [soldOut, setSoldOut] = useState(false);
+  const [maxPerOrder, setMaxPerOrder] = useState(MAX_PER_ORDER);
+  const [postalCode, setPostalCode] = useState("");
+  const [shipZone, setShipZone] = useState("");
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [orderStatus, setOrderStatus] = useState<"success" | "cancel" | null>(
+    null,
+  );
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -168,17 +170,54 @@ export default function EllieTattooer() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const refreshAvailability = useCallback(async () => {
+    try {
+      const res = await fetch("/api/availability", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setSoldOut(!data.available);
+      setMaxPerOrder(Math.max(0, Number(data.maxPerOrder ?? MAX_PER_ORDER)));
+    } catch {
+      // keep optimistic defaults if the check fails
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshAvailability();
+  }, [refreshAvailability]);
+
+  // Handle the return trip from Stripe Checkout (?checkout=success|cancel).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("checkout");
+    if (status === "success" || status === "cancel") {
+      setOrderStatus(status);
+      if (status === "success") {
+        setCart([]);
+        refreshAvailability();
+      }
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.hash,
+      );
+    }
+  }, [refreshAvailability]);
+
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
 
   const addToCart = (product: Product) => {
-    const size = selectedSizes[product.id];
-    if (!size) return;
+    const size = product.sizes[0];
+    if (!size || soldOut) return;
+    const cap = Math.max(1, maxPerOrder);
     setCart((prev) => {
       const existing = prev.find((i) => i.id === product.id && i.size === size);
-      if (existing)
+      if (existing) {
+        if (existing.qty >= cap) return prev; // at the per-order limit
         return prev.map((i) =>
           i.id === product.id && i.size === size ? { ...i, qty: i.qty + 1 } : i,
         );
+      }
       return [...prev, { ...product, size, qty: 1 }];
     });
     setAddedFeedback(product.id);
@@ -197,11 +236,25 @@ export default function EllieTattooer() {
   const removeFromCart = (id: number, size: string) =>
     setCart((prev) => prev.filter((i) => !(i.id === id && i.size === size)));
 
+  const updateQty = (id: number, size: string, delta: number) =>
+    setCart((prev) =>
+      prev.flatMap((i) => {
+        if (i.id !== id || i.size !== size) return [i];
+        const next = i.qty + delta;
+        if (next <= 0) return [];
+        if (next > maxPerOrder) return [i];
+        return [{ ...i, qty: next }];
+      }),
+    );
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const selectedZone = SHIPPING_ZONES.find((z) => z.id === shipZone);
+  const shippingCost = selectedZone ? selectedZone.amount / 100 : 0;
+
 
   const displayedPortfolioImages = showAllPortfolio
     ? PORTFOLIO_IMAGES
@@ -210,7 +263,7 @@ export default function EllieTattooer() {
   return (
     <div
       style={{
-        fontFamily: "'Oswald', 'Impact', sans-serif",
+        fontFamily: "var(--font-oswald), 'Impact', sans-serif",
         background: "#fecdbf",
         color: "#111",
         overflowX: "hidden",
@@ -222,7 +275,7 @@ export default function EllieTattooer() {
         html { scroll-behavior: smooth; }
 
         .nav-link {
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-weight: 600;
           font-size: 13px;
           letter-spacing: 0.12em;
@@ -293,7 +346,7 @@ export default function EllieTattooer() {
           display: flex; align-items: center; justify-content: center;
           opacity: 0;
           transition: opacity 0.3s;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-size: 14px;
           letter-spacing: 0.2em;
           color: #111;
@@ -309,7 +362,7 @@ export default function EllieTattooer() {
           max-width: 96%; max-height: 92%; object-fit: contain; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
         }
         .lightbox-close {
-          position: fixed; top: 20px; right: 20px; background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: 'Oswald', sans-serif; z-index: 2001;
+          position: fixed; top: 20px; right: 20px; background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: var(--font-oswald), sans-serif; z-index: 2001;
         }
         .portfolio-placeholder {
           width: 100%; height: 100%;
@@ -332,13 +385,40 @@ export default function EllieTattooer() {
           transform: translateY(-4px);
           box-shadow: 6px 6px 0 #111;
         }
+        .product-media {
+          position: relative;
+          aspect-ratio: 3 / 4;
+          overflow: hidden;
+          background: #1a1a1a;
+        }
+        .product-img-alt {
+          opacity: 0;
+          transition: opacity 0.45s ease;
+        }
+        .product-card:hover .product-img-alt { opacity: 1; }
+        .product-media-placeholder {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.2);
+          background: repeating-linear-gradient(
+            45deg,
+            #1a1a1a,
+            #1a1a1a 10px,
+            #222 10px,
+            #222 20px
+          );
+        }
 
         .btn-primary {
           background: #111;
           color: #fff;
           border: 2px solid #111;
           padding: 12px 28px;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-weight: 600;
           font-size: 13px;
           letter-spacing: 0.15em;
@@ -356,7 +436,7 @@ export default function EllieTattooer() {
           color: #111;
           border: 2px solid #111;
           padding: 10px 22px;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-weight: 600;
           font-size: 12px;
           letter-spacing: 0.15em;
@@ -374,7 +454,7 @@ export default function EllieTattooer() {
           color: #111;
           border: 2px solid #92c8b7;
           padding: 10px 22px;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-weight: 600;
           font-size: 14px;
           letter-spacing: 0.15em;
@@ -392,7 +472,7 @@ export default function EllieTattooer() {
           border: 1.5px solid #aaa;
           background: transparent;
           padding: 5px 10px;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-size: 12px;
           cursor: pointer;
           transition: all 0.15s;
@@ -408,7 +488,7 @@ export default function EllieTattooer() {
         }
 
         .section-title {
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-weight: 700;
           font-size: clamp(36px, 6vw, 72px);
           letter-spacing: 0.05em;
@@ -423,7 +503,7 @@ export default function EllieTattooer() {
           text-decoration: none;
           color: #111;
           transition: color 0.2s;
-          font-family: 'Oswald', sans-serif;
+          font-family: var(--font-oswald), sans-serif;
           font-size: 12px;
           font-weight: 500;
           letter-spacing: 0.1em;
@@ -444,7 +524,7 @@ export default function EllieTattooer() {
           top: 0; right: 0;
           width: 380px;
           height: 100vh;
-          background: #fecdbf;
+          background: hsl(348, 100%, 86%);
           border-left: 2px solid #111;
           z-index: 1000;
           transform: translateX(100%);
@@ -456,13 +536,10 @@ export default function EllieTattooer() {
 
         .cart-overlay {
           position: fixed; inset: 0;
-          background: rgba(0,0,0,0.4);
           z-index: 999;
-          opacity: 0;
           pointer-events: none;
-          transition: opacity 0.3s;
         }
-        .cart-overlay.open { opacity: 1; pointer-events: all; }
+        .cart-overlay.open { pointer-events: all; }
 
         .map-container {
           width: 100%;
@@ -527,20 +604,22 @@ export default function EllieTattooer() {
 
         .shop-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(300px, 360px));
           gap: 32px;
+          justify-content: center;
         }
         @media (max-width: 768px) {
           .shop-grid {
             display: flex;
             flex-direction: row;
+            justify-content: center;
             overflow-x: auto;
             gap: 16px;
             padding-bottom: 12px;
             -webkit-overflow-scrolling: touch;
           }
           .shop-grid > * {
-            flex: 0 0 75vw;
+            flex: 0 0 min(75vw, 340px);
           }
         }
 
@@ -568,6 +647,58 @@ export default function EllieTattooer() {
           }
         }
       `}</style>
+
+      {/* ORDER STATUS BANNER (return from Stripe Checkout) */}
+      {orderStatus && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 3000,
+            background: orderStatus === "success" ? "#92c8b7" : "#fff7f7",
+            borderBottom: "2px solid #111",
+            padding: "14px 48px 14px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-oswald), sans-serif",
+              fontWeight: 600,
+              fontSize: 14,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            {orderStatus === "success"
+              ? "Thank you! Your order is confirmed — a receipt is on its way to your email."
+              : "Checkout canceled — your cart is still saved."}
+          </span>
+          <button
+            onClick={() => setOrderStatus(null)}
+            aria-label="Dismiss"
+            style={{
+              position: "absolute",
+              right: 16,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "var(--font-oswald), sans-serif",
+              fontWeight: 700,
+              fontSize: 20,
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* NAVBAR */}
       <nav
@@ -633,7 +764,7 @@ export default function EllieTattooer() {
             }}
           >
             <img
-              src="/portfolio/betty.png"
+              src="/portfolio/betty.webp"
               alt="Ellie Tattooer"
               style={{
                 height: 333,
@@ -668,7 +799,7 @@ export default function EllieTattooer() {
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             {totalItems > 0 && (
-              <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Oswald', sans-serif" }}>
+              <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-oswald), sans-serif" }}>
                 {totalItems}
               </span>
             )}
@@ -708,7 +839,14 @@ export default function EllieTattooer() {
               className="ig-link"
               title="Ellie Tattooer on Instagram"
             >
-              <img src={ELLIE_PHOTO} alt="Ellie" className="ig-avatar" />
+              <img
+                src={ELLIE_PHOTO}
+                alt="Ellie"
+                className="ig-avatar"
+                width={36}
+                height={36}
+                decoding="async"
+              />
               <span style={{ fontSize: 11 }}>@ellie_tattooer</span>
             </a>
 
@@ -760,7 +898,7 @@ export default function EllieTattooer() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "'Oswald', sans-serif",
+                    fontFamily: "var(--font-oswald), sans-serif",
                   }}
                 >
                   {totalItems}
@@ -783,10 +921,7 @@ export default function EllieTattooer() {
 
       {/* HERO */}
       <section className="hero-section">
-        <div
-          className="hero-bg-pattern"
-          style={{ backgroundImage: `url(${HERO_BACKGROUND})` }}
-        />
+        <div className="hero-bg-pattern" />
         <div
           style={{
             position: "relative",
@@ -802,7 +937,7 @@ export default function EllieTattooer() {
           className="fade-up"
         >
           <Image
-            src="/portfolio/elliebanner.png"
+            src="/portfolio/elliebanner.webp"
             alt="Ellie Tattooer"
             width={900}
             height={600}
@@ -819,7 +954,7 @@ export default function EllieTattooer() {
           <div style={{ marginTop: 16, display: "inline-flex", flexDirection: "column", alignItems: "stretch" }}>
           <p
             style={{
-              fontFamily: "'oswald', sans-serif",
+              fontFamily: "var(--font-oswald), sans-serif",
               fontStyle: "normal",
               fontWeight: 700,
               fontSize: 23,
@@ -854,7 +989,7 @@ export default function EllieTattooer() {
               className="btn-mint"
               onClick={() => scrollTo("shop")}
             >
-              Shop Merch
+              Shop
             </button>
           </div>
           </div>
@@ -873,7 +1008,7 @@ export default function EllieTattooer() {
           <div>
             <p
               style={{
-                fontFamily: "'oswald', sans-serif",
+                fontFamily: "var(--font-oswald), sans-serif",
                 fontStyle: "italic",
                 color: "#000000",
                 fontSize: 17,
@@ -891,7 +1026,7 @@ export default function EllieTattooer() {
             
             <p
               style={{
-                fontFamily: "'oswald', sans-serif",
+                fontFamily: "var(--font-oswald), sans-serif",
                 fontSize: 21,
                 lineHeight: 1.8,
                 color: "#444",
@@ -902,7 +1037,7 @@ export default function EllieTattooer() {
             </p>
             <p
               style={{
-                fontFamily: "'oswald', sans-serif",
+                fontFamily: "var(--font-oswald), sans-serif",
                 fontStyle: "italic",
                 fontSize: 19,
                 lineHeight: 1.8,
@@ -974,7 +1109,7 @@ export default function EllieTattooer() {
           
           <p
             style={{
-              fontFamily: "'oswald', sans-serif",
+              fontFamily: "var(--font-oswald), sans-serif",
               fontSize: 20,
               color: "#555",
             }}
@@ -1049,125 +1184,114 @@ export default function EllieTattooer() {
         id="shop"
         style={{
           padding: "100px 24px",
-          background: "#aaf0b4",
+          background: "hsl(348, 100%, 86%)",
           position: "relative",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(255, 255, 255, 0.95)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 20,
-            textAlign: "center",
-            padding: 24,
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                marginBottom: 12,
-              }}
-            >
-              Merch Shop Coming Soon
-            </p>
-            <p
-              style={{
-                fontFamily: "'oswald', sans-serif",
-                fontSize: 20,
-                color: "#555",
-                margin: 0,
-              }}
-            >
-              Items are not available yet — check back soon.
-            </p>
-          </div>
-        </div>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 60 }}>
-            <p
-              style={{
-                fontFamily: "'oswald', sans-serif",
-                fontStyle: "italic",
-                color: "#c0392b",
-                fontSize: 17,
-                letterSpacing: "0.3em",
-                marginBottom: 12,
-              }}
-            >
-              ELLIE TATTOOER
-            </p>
-            <h2 className="section-title">MERCH SHOP</h2>
-            
+            <h2 className="section-title">SHOP</h2>
           </div>
           <div className="shop-grid">
             {PRODUCTS.map((product) => (
               <div key={product.id} className="product-card">
                 {/* Product Image */}
-                <div
-                  style={{
-                    height: 280,
-                    background:
-                      "repeating-linear-gradient(45deg,#1a1a1a,#1a1a1a 10px,#222 10px,#222 20px)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                  }}
-                >
-                  <div
-                    style={{
-                      textAlign: "center",
-                      color: "rgba(255,255,255,0.2)",
-                    }}
-                  >
-                    <svg
-                      width="56"
-                      height="56"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    <p
+                <div className="product-media">
+                  {product.images && product.images.length > 0 ? (
+                    <>
+                      <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 75vw, 360px"
+                        style={{ objectFit: "cover" }}
+                      />
+                      {product.images[1] && (
+                        <Image
+                          src={product.images[1]}
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 75vw, 360px"
+                          className="product-img-alt"
+                          style={{ objectFit: "cover" }}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <div className="product-media-placeholder">
+                      <div>
+                        <svg
+                          width="56"
+                          height="56"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                        <p
+                          style={{
+                            fontFamily: "var(--font-oswald), sans-serif",
+                            fontSize: 11,
+                            marginTop: 8,
+                            letterSpacing: "0.2em",
+                          }}
+                        >
+                          IMAGE COMING SOON
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {!soldOut && (
+                    <div
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        background: "#c0392b",
+                        color: "#fff",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 11,
-                        marginTop: 8,
-                        letterSpacing: "0.2em",
+                        fontWeight: 700,
+                        letterSpacing: "0.15em",
+                        padding: "4px 10px",
+                        zIndex: 2,
                       }}
                     >
-                      IMAGE COMING SOON
-                    </p>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 12,
-                      left: 12,
-                      background: "#c0392b",
-                      color: "#fff",
-                      fontFamily: "'Oswald', sans-serif",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.15em",
-                      padding: "4px 10px",
-                    }}
-                  >
-                    NEW
-                  </div>
+                      NEW
+                    </div>
+                  )}
+                  {soldOut && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(17,17,17,0.55)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 3,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-oswald), sans-serif",
+                          color: "#fff",
+                          fontSize: 22,
+                          fontWeight: 700,
+                          letterSpacing: "0.2em",
+                          textTransform: "uppercase",
+                          border: "2px solid #fff",
+                          padding: "8px 18px",
+                        }}
+                      >
+                        Sold Out
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {/* Product Info */}
                 <div style={{ padding: 24 }}>
@@ -1176,91 +1300,96 @@ export default function EllieTattooer() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
-                      marginBottom: 8,
+                      marginBottom: 16,
                     }}
                   >
                     <h3
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontWeight: 700,
-                        fontSize: 20,
-                        letterSpacing: "0.08em",
+                        fontSize: 16,
+                        letterSpacing: "0.03em",
                         textTransform: "uppercase",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {product.name}
                     </h3>
                     <span
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontWeight: 600,
-                        fontSize: 20,
+                        fontSize: 16,
                         color: "#c0392b",
+                        flexShrink: 0,
+                        marginLeft: 12,
                       }}
                     >
-                      €{product.price}
+                      €{product.basePrice ?? product.price} + VAT
                     </span>
                   </div>
-                  <p
-                    style={{
-                      fontFamily: "'oswald', sans-serif",
-                      fontStyle: "italic",
-                      color: "#666",
-                      fontSize: 17,
-                      marginBottom: 16,
-                    }}
-                  >
-                    {product.description}
-                  </p>
-                  {/* Size selector */}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 6,
-                      marginBottom: 16,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {product.sizes.map((size) => (
+                  {(() => {
+                    const inCart = cart.some((i) => i.id === product.id);
+                    const justAdded = addedFeedback === product.id;
+                    const viewCart = inCart && !justAdded;
+                    return (
                       <button
-                        key={size}
-                        className={`size-btn ${selectedSizes[product.id] === size ? "active" : ""}`}
+                        className={`btn-primary ${justAdded ? "added-pulse" : ""}`}
+                        style={{
+                          width: "100%",
+                          opacity: soldOut ? 0.5 : 1,
+                          cursor: soldOut ? "not-allowed" : "pointer",
+                          background: viewCart ? "#fff" : undefined,
+                          color: viewCart ? "#111" : undefined,
+                          border: viewCart ? "2px solid #111" : undefined,
+                        }}
                         onClick={() =>
-                          setSelectedSizes((prev) => ({
-                            ...prev,
-                            [product.id]: size,
-                          }))
+                          soldOut
+                            ? undefined
+                            : viewCart || justAdded
+                              ? setCartOpen(true)
+                              : addToCart(product)
                         }
+                        disabled={soldOut}
                       >
-                        {size}
+                        {soldOut
+                          ? "Sold Out"
+                          : justAdded
+                            ? "✓ Added to Cart"
+                            : viewCart
+                              ? "View Cart"
+                              : "Add to Cart"}
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    className={`btn-primary ${addedFeedback === product.id ? "added-pulse" : ""}`}
-                    style={{
-                      width: "100%",
-                      opacity: selectedSizes[product.id] ? 1 : 0.5,
-                    }}
-                    onClick={() => addToCart(product)}
-                  >
-                    {addedFeedback === product.id
-                      ? "✓ Added to Cart"
-                      : "Add to Cart"}
-                  </button>
-                  {!selectedSizes[product.id] && (
-                    <p
-                      style={{
-                        fontFamily: "'oswald', sans-serif",
-                        fontStyle: "italic",
-                        fontSize: 15,
-                        color: "#999",
-                        marginTop: 6,
-                        textAlign: "center",
-                      }}
+                    );
+                  })()}
+                  <p style={{
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontStyle: "italic",
+                    fontSize: 13,
+                    color: "#888",
+                    textAlign: "center",
+                    marginTop: 8,
+                  }}>
+                    Accepting orders soon
+                  </p>
+                  {product.makingOf && (
+                    <a
+                      href={product.makingOf}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ig-link"
+                      style={{ justifyContent: "center", marginTop: 14 }}
                     >
-                      Select a size to add
-                    </p>
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <polygon points="6 4 20 12 6 20 6 4" />
+                      </svg>
+                      Watch the making-of
+                    </a>
                   )}
                 </div>
               </div>
@@ -1277,7 +1406,7 @@ export default function EllieTattooer() {
           <div style={{ textAlign: "center", marginBottom: 60 }}>
             <p
               style={{
-                fontFamily: "'oswald', sans-serif",
+                fontFamily: "var(--font-oswald), sans-serif",
                 fontStyle: "italic",
                 color: "#1A1A1A",
                 fontSize: 17,
@@ -1295,7 +1424,7 @@ export default function EllieTattooer() {
             <div id="findme">
               <h3
                 style={{
-                  fontFamily: "'Oswald', sans-serif",
+                  fontFamily: "var(--font-oswald), sans-serif",
                   fontWeight: 700,
                   fontSize: 22,
                   letterSpacing: "0.1em",
@@ -1320,7 +1449,7 @@ export default function EllieTattooer() {
                 />
                 <span
                   style={{
-                    fontFamily: "'Oswald', sans-serif",
+                    fontFamily: "var(--font-oswald), sans-serif",
                     fontWeight: 600,
                     fontSize: 15,
                     letterSpacing: "0.1em",
@@ -1352,7 +1481,7 @@ export default function EllieTattooer() {
                   <div>
                     <p
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 14,
                         letterSpacing: "0.1em",
                         fontWeight: 600,
@@ -1362,7 +1491,7 @@ export default function EllieTattooer() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "'oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 18,
                         color: "#555",
                         marginTop: 2,
@@ -1393,7 +1522,7 @@ export default function EllieTattooer() {
                   <div>
                     <p
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 14,
                         letterSpacing: "0.1em",
                         fontWeight: 600,
@@ -1404,7 +1533,7 @@ export default function EllieTattooer() {
                     <a
                       href="tel:+302107777230"
                       style={{
-                        fontFamily: "'oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 18,
                         color: "#555",
                         textDecoration: "none",
@@ -1417,7 +1546,7 @@ export default function EllieTattooer() {
                     <a
                       href="tel:+306978907800"
                       style={{
-                        fontFamily: "'oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 18,
                         color: "#555",
                         textDecoration: "none",
@@ -1447,7 +1576,7 @@ export default function EllieTattooer() {
                   <div>
                     <p
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 14,
                         letterSpacing: "0.1em",
                         fontWeight: 600,
@@ -1457,7 +1586,7 @@ export default function EllieTattooer() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "'oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 18,
                         color: "#555",
                         marginTop: 2,
@@ -1490,7 +1619,7 @@ export default function EllieTattooer() {
                   <div>
                     <p
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontSize: 14,
                         letterSpacing: "0.1em",
                         fontWeight: 600,
@@ -1541,7 +1670,7 @@ export default function EllieTattooer() {
                 </svg>
                 <span
                   style={{
-                    fontFamily: "'Oswald', sans-serif",
+                    fontFamily: "var(--font-oswald), sans-serif",
                     fontSize: 13,
                     letterSpacing: "0.1em",
                     color: "#555",
@@ -1577,7 +1706,7 @@ export default function EllieTattooer() {
         >
           <p
             style={{
-              fontFamily: "'Oswald', sans-serif",
+              fontFamily: "var(--font-oswald), sans-serif",
               fontSize: 12,
               letterSpacing: "0.15em",
               color: "#1A1A1A",
@@ -1587,7 +1716,7 @@ export default function EllieTattooer() {
           </p>
           <p
             style={{
-              fontFamily: "'Oswald', sans-serif",
+              fontFamily: "var(--font-oswald), sans-serif",
               fontSize: 12,
               letterSpacing: "0.15em",
               color: "#1A1A1A",
@@ -1608,16 +1737,19 @@ export default function EllieTattooer() {
       <div className={`cart-drawer ${cartOpen ? "open" : ""}`}>
         <div
           style={{
-            padding: "24px",
+            height: 74,
+            padding: "0 24px",
             borderBottom: "2px solid #111",
+            background: "hsl(348, 100%, 86%)",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            flexShrink: 0,
           }}
         >
           <h3
             style={{
-              fontFamily: "'Oswald', sans-serif",
+              fontFamily: "var(--font-oswald), sans-serif",
               fontWeight: 700,
               fontSize: 20,
               letterSpacing: "0.1em",
@@ -1652,7 +1784,7 @@ export default function EllieTattooer() {
             </svg>
           </button>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px", background: "#fff" }}>
           {cart.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
               <svg
@@ -1672,7 +1804,7 @@ export default function EllieTattooer() {
               </svg>
               <p
                 style={{
-                  fontFamily: "'oswald', sans-serif",
+                  fontFamily: "var(--font-oswald), sans-serif",
                   fontStyle: "italic",
                   color: "#aaa",
                   fontSize: 19,
@@ -1687,17 +1819,14 @@ export default function EllieTattooer() {
                 <div
                   key={`${item.id}-${item.size}`}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
                     padding: "12px 0",
                     borderBottom: "1px solid #eee",
                   }}
                 >
-                  <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <p
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontWeight: 600,
                         fontSize: 14,
                         letterSpacing: "0.1em",
@@ -1706,49 +1835,55 @@ export default function EllieTattooer() {
                     >
                       {item.name}
                     </p>
-                    <p
-                      style={{
-                        fontFamily: "'oswald', sans-serif",
-                        fontSize: 16,
-                        color: "#888",
-                        marginTop: 2,
-                      }}
-                    >
-                      Size: {item.size} · Qty: {item.qty}
-                    </p>
-                  </div>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
                     <span
                       style={{
-                        fontFamily: "'Oswald', sans-serif",
+                        fontFamily: "var(--font-oswald), sans-serif",
                         fontWeight: 600,
                         color: "#c0392b",
+                        flexShrink: 0,
+                        marginLeft: 12,
                       }}
                     >
-                      €{item.price * item.qty}
+                      €{(item.price * item.qty).toFixed(2)}
                     </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    {/* Qty stepper */}
+                    <div style={{ display: "flex", alignItems: "center", border: "2px solid #111", height: 32 }}>
+                      <button
+                        onClick={() => updateQty(item.id, item.size, -1)}
+                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, color: "#111" }}
+                      >
+                        −
+                      </button>
+                      <span
+                        style={{
+                          width: 28,
+                          textAlign: "center",
+                          fontFamily: "var(--font-oswald), sans-serif",
+                          fontWeight: 600,
+                          fontSize: 14,
+                          borderLeft: "2px solid #111",
+                          borderRight: "2px solid #111",
+                          lineHeight: "28px",
+                        }}
+                      >
+                        {item.qty}
+                      </span>
+                      <button
+                        onClick={() => updateQty(item.id, item.size, +1)}
+                        disabled={item.qty >= maxPerOrder}
+                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: item.qty >= maxPerOrder ? "not-allowed" : "pointer", fontSize: 18, lineHeight: 1, color: item.qty >= maxPerOrder ? "#ccc" : "#111" }}
+                      >
+                        +
+                      </button>
+                    </div>
+                    {/* Remove */}
                     <button
                       onClick={() => removeFromCart(item.id, item.size)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#aaa",
-                      }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 13, fontFamily: "var(--font-oswald), sans-serif", letterSpacing: "0.05em" }}
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
+                      Remove
                     </button>
                   </div>
                 </div>
@@ -1757,54 +1892,257 @@ export default function EllieTattooer() {
           )}
         </div>
         {cart.length > 0 && (
-          <div style={{ padding: "24px", borderTop: "2px solid #111" }}>
-            <div
+          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff" }}>
+            {/* Postal code → auto-detect zone */}
+            <label
+              htmlFor="postal-code"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 16,
+                display: "block",
+                fontFamily: "var(--font-oswald), sans-serif",
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                marginBottom: 6,
               }}
             >
-              <span
+              Your postal code
+            </label>
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <input
+                id="postal-code"
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                placeholder="e.g. 10431"
+                value={postalCode}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setPostalCode(v);
+                  setCheckoutError(null);
+                  if (v.length === 5) {
+                    const result = zoneFromPostalCode(v);
+                    if (result === "international" || result === null) {
+                      setShipZone(result === "international" ? "international" : "unknown");
+                    } else {
+                      setShipZone(result.id);
+                    }
+                  } else {
+                    setShipZone("");
+                  }
+                }}
                 style={{
-                  fontFamily: "'Oswald', sans-serif",
-                  fontWeight: 600,
+                  width: "100%",
+                  padding: "10px 40px 10px 12px",
+                  border: `2px solid ${postalCode.length === 5 && !selectedZone && shipZone !== "international" ? "#c0392b" : "#111"}`,
+                  background: "#fff",
+                  fontFamily: "var(--font-oswald), sans-serif",
                   fontSize: 16,
                   letterSpacing: "0.1em",
-                  textTransform: "uppercase",
+                  outline: "none",
                 }}
-              >
-                Total
-              </span>
-              <span
-                style={{
-                  fontFamily: "'Oswald', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 20,
-                  color: "#c0392b",
-                }}
-              >
-                €{cartTotal}
-              </span>
+              />
+              {postalCode.length === 5 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: 16,
+                    color: selectedZone ? "#2ecc71" : "#c0392b",
+                  }}
+                >
+                  {selectedZone ? "✓" : "✗"}
+                </span>
+              )}
             </div>
-            <button
-              className="btn-primary"
-              style={{ width: "100%", fontSize: 14, padding: "14px" }}
-            >
-              Proceed to Checkout
-            </button>
-            <p
-              style={{
-                fontFamily: "'oswald', sans-serif",
-                fontStyle: "italic",
-                fontSize: 15,
-                color: "#aaa",
-                textAlign: "center",
-                marginTop: 10,
-              }}
-            >
-              Payments coming soon — Stripe integration ready
-            </p>
+
+            {/* Detected zone chip */}
+            {selectedZone && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 14px",
+                  background: "hsl(348,100%,86%)",
+                  border: "2px solid #111",
+                  marginBottom: 16,
+                  fontFamily: "var(--font-oswald), sans-serif",
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 600 }}>
+                  {selectedZone.label}
+                </span>
+                <span style={{ fontSize: 13, color: "#555" }}>
+                  {selectedZone.delivery}
+                </span>
+              </div>
+            )}
+
+            {/* International */}
+            {shipZone === "international" && (
+              <div
+                style={{
+                  border: "2px solid #111",
+                  padding: 16,
+                  background: "#fff7f7",
+                  marginBottom: 16,
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontSize: 15,
+                    lineHeight: 1.5,
+                    marginBottom: 12,
+                  }}
+                >
+                  We currently ship within Greece only. For international orders,
+                  send a quick DM and we’ll arrange it.
+                </p>
+                <a
+                  href={INTERNATIONAL_DM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "center",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    padding: "14px",
+                  }}
+                >
+                  DM on Instagram to order
+                </a>
+              </div>
+            )}
+
+            {/* Unrecognised */}
+            {shipZone === "unknown" && (
+              <p
+                style={{
+                  fontFamily: "var(--font-oswald), sans-serif",
+                  fontSize: 13,
+                  color: "#c0392b",
+                  marginBottom: 16,
+                  lineHeight: 1.5,
+                }}
+              >
+                We couldn’t verify this postal code. Double-check it or{" "}
+                <a
+                  href={INTERNATIONAL_DM_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: "#c0392b" }}
+                >
+                  DM us
+                </a>
+                .
+              </p>
+            )}
+
+            {/* Totals + checkout (only when zone known) */}
+            {selectedZone && (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontSize: 15,
+                    color: "#444",
+                  }}
+                >
+                  <span>Subtotal</span>
+                  <span>€{cartTotal.toFixed(2)}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontSize: 15,
+                    color: "#444",
+                  }}
+                >
+                  <span>Shipping</span>
+                  <span>€{shippingCost.toFixed(2)}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    margin: "10px 0 16px",
+                    paddingTop: 10,
+                    borderTop: "1px solid #ddd",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-oswald), sans-serif",
+                      fontWeight: 600,
+                      fontSize: 16,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Total
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-oswald), sans-serif",
+                      fontWeight: 700,
+                      fontSize: 20,
+                      color: "#c0392b",
+                    }}
+                  >
+                    €{(cartTotal + shippingCost).toFixed(2)}
+                  </span>
+                </div>
+                <button
+                  className="btn-primary"
+                  style={{
+                    width: "100%",
+                    fontSize: 14,
+                    padding: "14px",
+                  }}
+                  onClick={() => setCheckoutError("I will start accepting orders soon — stay tuned!")}
+                >
+                  Proceed to Checkout
+                </button>
+                {checkoutError && (
+                  <p
+                    style={{
+                      fontFamily: "var(--font-oswald), sans-serif",
+                      fontSize: 14,
+                      color: "#111",
+                      textAlign: "center",
+                      marginTop: 8,
+                    }}
+                  >
+                    {checkoutError}
+                  </p>
+                )}
+                <p
+                  style={{
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontStyle: "italic",
+                    fontSize: 13,
+                    color: "#aaa",
+                    textAlign: "center",
+                    marginTop: 10,
+                  }}
+                >
+                  Secure checkout via Stripe
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
