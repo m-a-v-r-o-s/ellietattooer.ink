@@ -153,6 +153,7 @@ export default function EllieTattooer() {
   const [postalCode, setPostalCode] = useState("");
   const [shipZone, setShipZone] = useState("");
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkingOut, setCheckingOut] = useState(false);
   const [orderStatus, setOrderStatus] = useState<"success" | "cancel" | null>(
     null,
   );
@@ -208,6 +209,36 @@ export default function EllieTattooer() {
   }, [refreshAvailability]);
 
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+
+  // Create a Stripe Checkout session for the current cart + shipping zone,
+  // then hand the customer off to Stripe's hosted payment page.
+  const handleCheckout = useCallback(async () => {
+    if (checkingOut || soldOut || cart.length === 0 || !shipZone) return;
+    setCheckoutError(null);
+    setCheckingOut(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity: totalItems, zone: shipZone }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        if (data.soldOut) {
+          setSoldOut(true);
+          refreshAvailability();
+        }
+        setCheckoutError(data.error ?? "Something went wrong. Please try again.");
+        setCheckingOut(false);
+        return;
+      }
+      // Success: redirect to Stripe (no need to clear the loading flag).
+      window.location.href = data.url;
+    } catch {
+      setCheckoutError("Couldn’t reach checkout. Please try again.");
+      setCheckingOut(false);
+    }
+  }, [checkingOut, soldOut, cart.length, shipZone, totalItems, refreshAvailability]);
 
   const addToCart = (product: Product) => {
     const size = product.sizes[0];
@@ -1365,16 +1396,6 @@ export default function EllieTattooer() {
                       </button>
                     );
                   })()}
-                  <p style={{
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontStyle: "italic",
-                    fontSize: 13,
-                    color: "#888",
-                    textAlign: "center",
-                    marginTop: 8,
-                  }}>
-                    Accepting orders soon
-                  </p>
                   {product.makingOf && (
                     <a
                       href={product.makingOf}
@@ -2114,10 +2135,13 @@ export default function EllieTattooer() {
                     width: "100%",
                     fontSize: 14,
                     padding: "14px",
+                    opacity: checkingOut ? 0.6 : 1,
+                    cursor: checkingOut ? "wait" : "pointer",
                   }}
-                  onClick={() => setCheckoutError("I will start accepting orders soon — stay tuned!")}
+                  onClick={handleCheckout}
+                  disabled={checkingOut}
                 >
-                  Proceed to Checkout
+                  {checkingOut ? "Redirecting to Stripe…" : "Proceed to Checkout"}
                 </button>
                 {checkoutError && (
                   <p
