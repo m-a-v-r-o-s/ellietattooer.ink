@@ -16,29 +16,37 @@ export function getStripe(): Stripe | null {
  *
  * Stripe is the source of truth: we tag each PaymentIntent with the product id
  * and the purchased quantity, then sum succeeded ones. No separate database.
+ *
+ * Uses the List API (not Search): it's strongly consistent and available on
+ * every account immediately, whereas the Search index is eventually-consistent
+ * and isn't provisioned on brand-new accounts. Volume here is tiny, so listing
+ * and filtering in code is cheap.
  */
 export async function getSoldCount(
   stripe: Stripe,
   productId: string,
 ): Promise<number> {
   let sold = 0;
-  let page: string | undefined = undefined;
+  let startingAfter: string | undefined = undefined;
 
   do {
-    const res: Stripe.ApiSearchResult<Stripe.PaymentIntent> =
-      await stripe.paymentIntents.search({
-        query: `status:'succeeded' AND metadata['product']:'${productId}'`,
+    const res: Stripe.ApiList<Stripe.PaymentIntent> =
+      await stripe.paymentIntents.list({
         limit: 100,
-        ...(page ? { page } : {}),
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
       });
 
     for (const pi of res.data) {
+      if (pi.status !== "succeeded") continue;
+      if (pi.metadata?.product !== productId) continue;
       const qty = Number(pi.metadata?.qty ?? "1");
       sold += Number.isFinite(qty) && qty > 0 ? qty : 1;
     }
 
-    page = res.has_more ? (res.next_page ?? undefined) : undefined;
-  } while (page);
+    startingAfter = res.has_more
+      ? res.data[res.data.length - 1]?.id
+      : undefined;
+  } while (startingAfter);
 
   return sold;
 }

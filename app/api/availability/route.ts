@@ -27,7 +27,8 @@ export async function GET() {
       maxPerOrder: Math.min(MAX_PER_ORDER, remaining),
       configured: true,
     });
-  } catch {
+  } catch (err) {
+    console.error("availability: getSoldCount failed", err);
     // Transient Stripe error: fail open for display only — checkout still
     // re-verifies stock authoritatively before taking any money.
     return Response.json({

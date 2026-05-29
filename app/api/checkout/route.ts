@@ -41,7 +41,8 @@ export async function POST(request: Request) {
   let sold: number;
   try {
     sold = await getSoldCount(stripe, PRODUCT.id);
-  } catch {
+  } catch (err) {
+    console.error("checkout: getSoldCount failed", err);
     return Response.json(
       { error: "Couldn’t verify availability. Please try again." },
       { status: 503 },
