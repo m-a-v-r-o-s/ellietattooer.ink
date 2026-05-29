@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   SHIPPING_ZONES,
   MAX_PER_ORDER,
+  TOTAL_STOCK,
   INTERNATIONAL_DM_URL,
 } from "@/lib/shop";
 import { zoneFromPostalCode } from "@/lib/postal-zones";
@@ -147,6 +148,7 @@ export default function EllieTattooer() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [soldOut, setSoldOut] = useState(false);
+  const [remaining, setRemaining] = useState(TOTAL_STOCK);
   const [maxPerOrder, setMaxPerOrder] = useState(MAX_PER_ORDER);
   const [postalCode, setPostalCode] = useState("");
   const [shipZone, setShipZone] = useState("");
@@ -176,6 +178,7 @@ export default function EllieTattooer() {
       if (!res.ok) return;
       const data = await res.json();
       setSoldOut(!data.available);
+      setRemaining(Math.max(0, Number(data.remaining ?? TOTAL_STOCK)));
       setMaxPerOrder(Math.max(0, Number(data.maxPerOrder ?? MAX_PER_ORDER)));
     } catch {
       // keep optimistic defaults if the check fails
@@ -1261,7 +1264,7 @@ export default function EllieTattooer() {
                         zIndex: 2,
                       }}
                     >
-                      NEW
+                      {remaining} LEFT
                     </div>
                   )}
                   {soldOut && (

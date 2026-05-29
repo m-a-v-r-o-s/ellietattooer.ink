@@ -12,6 +12,7 @@ export async function GET() {
   if (!stripe) {
     return Response.json({
       available: true,
+      remaining: TOTAL_STOCK,
       maxPerOrder: MAX_PER_ORDER,
       configured: false,
     });
@@ -22,6 +23,7 @@ export async function GET() {
     const remaining = Math.max(0, TOTAL_STOCK - sold);
     return Response.json({
       available: remaining > 0,
+      remaining,
       maxPerOrder: Math.min(MAX_PER_ORDER, remaining),
       configured: true,
     });
@@ -30,6 +32,7 @@ export async function GET() {
     // re-verifies stock authoritatively before taking any money.
     return Response.json({
       available: true,
+      remaining: TOTAL_STOCK,
       maxPerOrder: MAX_PER_ORDER,
       configured: true,
     });

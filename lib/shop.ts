@@ -10,10 +10,10 @@ export const PRODUCT = {
 } as const;
 
 // Total units that will ever be sold. Never exposed to the browser.
-export const TOTAL_STOCK = 5;
+export const TOTAL_STOCK = 3;
 
 // Max units a single customer can buy in one order.
-export const MAX_PER_ORDER = 2;
+export const MAX_PER_ORDER = 1;
 
 export type ShippingZone = {
   id: string;
