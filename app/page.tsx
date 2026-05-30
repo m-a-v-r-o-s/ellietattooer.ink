@@ -558,7 +558,7 @@ export default function EllieTattooer() {
           top: 0; right: 0;
           width: 380px;
           height: 100vh;
-          background: hsl(348, 100%, 86%);
+          background: #fff;
           border-left: 2px solid #111;
           z-index: 1000;
           transform: translateX(100%);
@@ -1808,7 +1808,7 @@ export default function EllieTattooer() {
             </svg>
           </button>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px", background: "#fff" }}>
+        <div style={{ flex: "0 1 auto", minHeight: 0, overflowY: "auto", padding: "24px", background: "#fff" }}>
           {cart.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
               <svg
@@ -1916,7 +1916,7 @@ export default function EllieTattooer() {
           )}
         </div>
         {cart.length > 0 && (
-          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff" }}>
+          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff", flexShrink: 0 }}>
             {/* Postal code → auto-detect zone */}
             <label
               htmlFor="postal-code"
@@ -1930,7 +1930,7 @@ export default function EllieTattooer() {
                 marginBottom: 6,
               }}
             >
-              Your postal code
+              Enter your postal code
             </label>
             <div style={{ position: "relative", marginBottom: 12 }}>
               <input
@@ -1981,6 +1981,21 @@ export default function EllieTattooer() {
                 </span>
               )}
             </div>
+
+            {/* Prompt to enter a postal code before any zone resolves */}
+            {shipZone === "" && (
+              <p
+                style={{
+                  fontFamily: "var(--font-oswald), sans-serif",
+                  fontStyle: "italic",
+                  fontSize: 13,
+                  color: "#888",
+                  lineHeight: 1.5,
+                }}
+              >
+                To calculate shipping costs and delivery time with ELTA Courier.
+              </p>
+            )}
 
             {/* Detected zone chip */}
             {selectedZone && (
