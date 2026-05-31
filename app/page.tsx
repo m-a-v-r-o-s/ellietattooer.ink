@@ -1344,7 +1344,7 @@ export default function EllieTattooer() {
                         fontSize: 16,
                         letterSpacing: "0.03em",
                         textTransform: "uppercase",
-                        whiteSpace: "nowrap",
+                        minWidth: 0,
                       }}
                     >
                       {product.name}
