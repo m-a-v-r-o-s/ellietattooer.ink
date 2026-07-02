@@ -138,6 +138,23 @@ const PORTFOLIO_IMAGES = [
   "Screenshot_2026-05-23_01-40-41.webp",
 ];
 
+// Cookie-consent persistence. Bump the version suffix to re-prompt everyone.
+const COOKIE_CONSENT_KEY = "ellie_cookie_consent_v1";
+
+// Publish the analytics choice so any analytics that loads later can honour it.
+// No-ops cleanly when nothing (e.g. Google Consent Mode) is present.
+function applyConsent(analytics: boolean) {
+  if (typeof window === "undefined") return;
+  (window as unknown as { __analyticsConsent?: boolean }).__analyticsConsent =
+    analytics;
+  const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+  if (typeof w.gtag === "function") {
+    w.gtag("consent", "update", {
+      analytics_storage: analytics ? "granted" : "denied",
+    });
+  }
+}
+
 export default function EllieTattooer() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -157,6 +174,9 @@ export default function EllieTattooer() {
   const [orderStatus, setOrderStatus] = useState<"success" | "cancel" | null>(
     null,
   );
+  const [cookieBannerOpen, setCookieBannerOpen] = useState(false);
+  const [cookieManage, setCookieManage] = useState(false);
+  const [analyticsPref, setAnalyticsPref] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 10);
@@ -171,6 +191,35 @@ export default function EllieTattooer() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Show the cookie banner only when we have no stored decision yet.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as { analytics?: boolean };
+        applyConsent(!!saved.analytics);
+      } else {
+        setCookieBannerOpen(true);
+      }
+    } catch {
+      setCookieBannerOpen(true);
+    }
+  }, []);
+
+  const persistCookieConsent = useCallback((analytics: boolean) => {
+    try {
+      localStorage.setItem(
+        COOKIE_CONSENT_KEY,
+        JSON.stringify({ analytics, ts: Date.now() }),
+      );
+    } catch {
+      // Storage unavailable — the choice still applies for this session.
+    }
+    applyConsent(analytics);
+    setCookieManage(false);
+    setCookieBannerOpen(false);
   }, []);
 
   const refreshAvailability = useCallback(async () => {
@@ -551,6 +600,128 @@ export default function EllieTattooer() {
           object-fit: cover;
           border: 2px solid #111;
           flex-shrink: 0;
+        }
+
+        .cookie-card {
+          position: fixed;
+          left: 20px;
+          bottom: 20px;
+          z-index: 3000;
+          width: min(420px, calc(100vw - 40px));
+          background: #fff;
+          color: #111;
+          border: 2px solid #111;
+          box-shadow: 6px 6px 0 #111;
+          padding: 22px 22px 20px;
+          font-family: var(--font-oswald), sans-serif;
+          animation: cookieUp 0.4s ease forwards;
+        }
+        @keyframes cookieUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .cookie-label {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          color: #111;
+          margin-bottom: 12px;
+        }
+        .cookie-label::before {
+          content: '';
+          width: 22px; height: 3px;
+          background: #c0392b;
+          flex-shrink: 0;
+        }
+        .cookie-body {
+          font-size: 13.5px;
+          line-height: 1.5;
+          color: #333;
+          margin-bottom: 18px;
+        }
+        .cookie-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .cookie-btn {
+          flex: 1 1 auto;
+          text-align: center;
+          padding: 11px 16px;
+          font-size: 12px;
+        }
+        .cookie-link {
+          display: inline-block;
+          margin-top: 14px;
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-family: var(--font-oswald), sans-serif;
+          font-weight: 600;
+          font-size: 11.5px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #111;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          transition: color 0.2s;
+        }
+        .cookie-link:hover { color: #FFB3C1; }
+        .cookie-row {
+          border-top: 2px solid #111;
+          padding: 14px 0;
+        }
+        .cookie-row:first-of-type { border-top: none; padding-top: 0; }
+        .cookie-row-head {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+        .cookie-row-clickable { cursor: pointer; }
+        .cookie-checkbox {
+          width: 18px; height: 18px;
+          accent-color: #111;
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+        .cookie-checkbox:disabled { cursor: default; }
+        .cookie-row-title {
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+        .cookie-badge {
+          margin-left: auto;
+          font-size: 9.5px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #111;
+          border: 1.5px solid #111;
+          padding: 3px 7px;
+          white-space: nowrap;
+        }
+        .cookie-row-desc {
+          font-size: 12.5px;
+          line-height: 1.45;
+          color: #555;
+          padding-left: 28px;
+        }
+        @media (max-width: 480px) {
+          .cookie-card {
+            left: 12px; right: 12px; bottom: 12px;
+            width: auto;
+            box-shadow: 4px 4px 0 #111;
+            padding: 18px 16px 16px;
+          }
+          .cookie-actions { flex-direction: column; }
         }
 
         .cart-drawer {
@@ -2188,6 +2359,101 @@ export default function EllieTattooer() {
           </div>
         )}
       </div>
+
+      {/* COOKIE CONSENT */}
+      {cookieBannerOpen && (
+        <div
+          className="cookie-card"
+          role="dialog"
+          aria-label="Cookies"
+          aria-live="polite"
+        >
+          <div className="cookie-label">Cookies</div>
+
+          {!cookieManage ? (
+            <>
+              <p className="cookie-body">
+                Αυτός ο ιστότοπος χρησιμοποιεί απαραίτητα cookies για να
+                λειτουργεί. Με τη συγκατάθεσή σου, προαιρετικά cookies όπως
+                analytics με βοηθούν να τον βελτιώσω. Έχεις τον έλεγχο: αποδοχή,
+                απόρριψη ή διαχείριση προτιμήσεων.
+              </p>
+              <div className="cookie-actions">
+                <button
+                  className="btn-primary cookie-btn"
+                  onClick={() => persistCookieConsent(true)}
+                >
+                  Αποδοχή όλων
+                </button>
+                <button
+                  className="btn-outline cookie-btn"
+                  onClick={() => persistCookieConsent(false)}
+                >
+                  Απόρριψη όλων
+                </button>
+              </div>
+              <button
+                className="cookie-link"
+                onClick={() => {
+                  setAnalyticsPref(false);
+                  setCookieManage(true);
+                }}
+              >
+                Διαχείριση προτιμήσεων
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="cookie-row">
+                <label className="cookie-row-head">
+                  <input
+                    type="checkbox"
+                    className="cookie-checkbox"
+                    checked
+                    disabled
+                    readOnly
+                  />
+                  <span className="cookie-row-title">Απολύτως απαραίτητα</span>
+                  <span className="cookie-badge">Πάντα ενεργά</span>
+                </label>
+                <p className="cookie-row-desc">
+                  Απαραίτητα για τη λειτουργία του ιστότοπου, όπως ασφάλεια και η
+                  αποθήκευση αυτής της επιλογής.
+                </p>
+              </div>
+              <div className="cookie-row">
+                <label className="cookie-row-head cookie-row-clickable">
+                  <input
+                    type="checkbox"
+                    className="cookie-checkbox"
+                    checked={analyticsPref}
+                    onChange={(e) => setAnalyticsPref(e.target.checked)}
+                  />
+                  <span className="cookie-row-title">Analytics</span>
+                </label>
+                <p className="cookie-row-desc">
+                  Ανώνυμα στατιστικά που με βοηθούν να καταλάβω πώς
+                  χρησιμοποιείται ο ιστότοπος.
+                </p>
+              </div>
+              <div className="cookie-actions">
+                <button
+                  className="btn-outline cookie-btn"
+                  onClick={() => persistCookieConsent(analyticsPref)}
+                >
+                  Αποθήκευση προτιμήσεων
+                </button>
+                <button
+                  className="btn-primary cookie-btn"
+                  onClick={() => persistCookieConsent(true)}
+                >
+                  Αποδοχή όλων
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
