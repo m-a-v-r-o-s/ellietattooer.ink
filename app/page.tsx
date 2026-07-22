@@ -594,6 +594,14 @@ export default function EllieTattooer() {
         }
         .ig-link:hover { color: #FFB3C1; }
 
+        .credit-link {
+          color: inherit;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+          transition: color 0.2s;
+        }
+        .credit-link:hover { color: #FFB3C1; }
+
         .ig-avatar {
           width: 36px; height: 36px;
           border-radius: 50%;
@@ -1917,7 +1925,16 @@ export default function EllieTattooer() {
               color: "#1A1A1A",
             }}
           >
-            © 2026 AKOS DIGITAL. ALL RIGHTS RESERVED.
+            © 2026{" "}
+            <a
+              href="https://akosds.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="credit-link"
+            >
+              AKOS DIGITAL
+            </a>
+            . ALL RIGHTS RESERVED.
           </p>
         </div>
       </footer>
