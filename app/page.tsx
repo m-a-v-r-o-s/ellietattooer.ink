@@ -1274,6 +1274,7 @@ export default function EllieTattooer() {
             <div style={{ position: "relative" }}>
               <div
                 style={{
+                  position: "relative",
                   width: 320,
                   height: 380,
                   background: "#111",
@@ -1281,12 +1282,15 @@ export default function EllieTattooer() {
                   overflow: "hidden",
                 }}
               >
-                <img
+                <Image
                   src={ELLIE_PHOTO}
                   alt="Ellie Tattooer"
-                  loading="lazy"
-                  decoding="async"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  fill
+                  // The source is landscape (900x746) but the frame is portrait,
+                  // so `cover` crops the sides: the width that actually gets used
+                  // is 380px of height x the source ratio, not the frame's 320px.
+                  sizes="460px"
+                  style={{ objectFit: "cover" }}
                 />
               </div>
               <div
