@@ -5,10 +5,12 @@ via **Stripe Checkout**, hosted on **Railway**.
 
 ## How it works
 
-- **Inventory:** 5 total, **hidden** from the page. Each paid order is tagged in
-  Stripe; before every checkout the server tallies paid units. At 5 the product
-  flips to **SOLD OUT** automatically. No database — Stripe is the source of truth.
-- **Per order:** up to **2** prints, never more than what's left.
+- **Inventory:** 3 total, **shown** on the page as an "N LEFT" badge. Each paid
+  order is tagged in Stripe; before every checkout the server tallies paid
+  units. At 3 the product flips to **SOLD OUT** automatically. No database —
+  Stripe is the source of truth. The tally is cached briefly (60s for the badge,
+  5s for checkout) so a burst of traffic can't hammer the Stripe API.
+- **Per order:** up to **1** print, never more than what's left.
 - **Shipping:** Greece only, 5 zones (`lib/shop.ts`), prices include 24% VAT.
   Choosing **Outside Greece** hides checkout and shows a "DM on Instagram" link.
 - **After payment:** customer returns to `/?checkout=success`, the cart clears
@@ -21,7 +23,9 @@ via **Stripe Checkout**, hosted on **Railway**.
    (use **Test mode** first — key starts with `sk_test_`).
 3. In **Railway → your service → Variables**, add:
    - `STRIPE_SECRET_KEY = sk_test_...`
-   - (optional) `NEXT_PUBLIC_SITE_URL = https://ellietattooer.com`
+   - `NEXT_PUBLIC_SITE_URL = https://ellietattooer.com` — set this. It controls
+     where buyers land after paying, and it is deliberately not read from the
+     request headers (those are forgeable).
 4. Redeploy. Done — the shop is live.
 
 When ready for real sales, switch Stripe to **Live mode**, copy the
@@ -31,7 +35,8 @@ When ready for real sales, switch Stripe to **Live mode**, copy the
 
 Buy the print and at Stripe's page use card **4242 4242 4242 4242**, any future
 expiry, any CVC, any Greek address. After paying you'll land back on the site
-with the confirmation banner. Make 5 test purchases and the card shows SOLD OUT.
+with the confirmation banner. Make 3 test purchases and the card shows SOLD OUT
+(allow up to a minute for the badge to catch up — the count is cached).
 
 ## Orders & notifications
 

@@ -9,7 +9,10 @@ export const PRODUCT = {
   image: "/portfolio/Backpiece-print.webp",
 } as const;
 
-// Total units that will ever be sold. Never exposed to the browser.
+// Total units that will ever be sold. This file is imported by the storefront,
+// so this number ships in the client bundle — and /api/availability returns the
+// live remaining count on purpose, to drive the "N LEFT" scarcity badge. Both
+// are deliberate; don't put anything here you wouldn't publish.
 export const TOTAL_STOCK = 3;
 
 // Max units a single customer can buy in one order.

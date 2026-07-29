@@ -1,4 +1,5 @@
-import { getStripe, getSoldCount } from "@/lib/stripe";
+import { getStripe, getSoldCountCached } from "@/lib/stripe";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 import {
   PRODUCT,
   TOTAL_STOCK,
@@ -8,7 +9,42 @@ import {
 
 export const runtime = "nodejs";
 
+/**
+ * The public origin is fixed configuration and is NEVER derived from the
+ * request.
+ *
+ * `Origin` and `Host` are attacker-controlled on a direct POST — no browser is
+ * involved, so nothing constrains them. They feed success_url, cancel_url and
+ * the product image on Stripe's hosted page, which meant anyone could mint a
+ * genuine checkout.stripe.com link for this shop that showed an image of their
+ * choosing and sent the buyer to their domain the moment payment succeeded.
+ * Textbook payment-confirmation phishing, hosted on real Stripe, paid to us.
+ */
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://ellietattooer.com"
+).replace(/\/+$/, "");
+
+// A real buyer creates one session, maybe a few if they change their mind.
+const CHECKOUT_LIMIT = 10;
+const CHECKOUT_WINDOW_MS = 5 * 60_000;
+
+// Checkout is the authoritative stock gate, so it wants a near-live count —
+// short enough to be current, long enough to absorb a burst.
+const CHECKOUT_MAX_AGE_MS = 5_000;
+
 export async function POST(request: Request) {
+  const limit = rateLimit(
+    `checkout:${clientIp(request.headers)}`,
+    CHECKOUT_LIMIT,
+    CHECKOUT_WINDOW_MS,
+  );
+  if (!limit.ok) {
+    return Response.json(
+      { error: "Too many attempts. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+    );
+  }
+
   const stripe = getStripe();
   if (!stripe) {
     return Response.json(
@@ -40,7 +76,7 @@ export async function POST(request: Request) {
   // Authoritative stock check (Stripe is the source of truth).
   let sold: number;
   try {
-    sold = await getSoldCount(stripe, PRODUCT.id);
+    sold = await getSoldCountCached(stripe, PRODUCT.id, CHECKOUT_MAX_AGE_MS);
   } catch (err) {
     console.error("checkout: getSoldCount failed", err);
     return Response.json(
@@ -55,14 +91,7 @@ export async function POST(request: Request) {
   }
   if (quantity > remaining) quantity = remaining;
 
-  const h = request.headers;
-  const host = h.get("host");
-  const origin =
-    h.get("origin") ||
-    (host ? `${h.get("x-forwarded-proto") || "https"}://${host}` : "") ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://ellietattooer.com";
-  const imageUrl = `${origin}${PRODUCT.image}`;
+  const imageUrl = `${SITE_URL}${PRODUCT.image}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -74,8 +103,9 @@ export async function POST(request: Request) {
           unit_amount: PRODUCT.amount, // €60 + 24% VAT = €74.40
           product_data: {
             name: PRODUCT.name,
-            // Stripe only renders images it can fetch over HTTPS.
-            ...(origin.startsWith("https") ? { images: [imageUrl] } : {}),
+            // Stripe only renders images it can fetch over HTTPS, so a local
+            // http:// dev origin simply omits it.
+            ...(SITE_URL.startsWith("https://") ? { images: [imageUrl] } : {}),
           },
         },
       },
@@ -99,8 +129,8 @@ export async function POST(request: Request) {
       metadata: { product: PRODUCT.id, qty: String(quantity), zone: zone.id },
     },
     metadata: { product: PRODUCT.id, qty: String(quantity), zone: zone.id },
-    success_url: `${origin}/?checkout=success`,
-    cancel_url: `${origin}/?checkout=cancel`,
+    success_url: `${SITE_URL}/?checkout=success`,
+    cancel_url: `${SITE_URL}/?checkout=cancel`,
   });
 
   return Response.json({ url: session.url });
