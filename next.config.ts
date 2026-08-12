@@ -11,13 +11,22 @@ import type { NextConfig } from "next";
 //
 // img-src carries the studio logo host, which is hotlinked from the header and
 // footer via a plain <img>. data: covers next/image blur placeholders.
+//
+// The googletagmanager.com / google-analytics.com entries are for the GA4
+// scaffold in app/layout.tsx, which only ever loads a script tag when
+// NEXT_PUBLIC_GA_MEASUREMENT_ID is set — harmless allow-list entries until
+// then, and one less thing to remember to change alongside that env var.
+//
+// frame-src allows the studio-info Google Maps embed; without it default-src
+// 'self' blocks the iframe outright and it silently renders blank.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https://ritualtattoo.gr",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com",
+  "frame-src https://www.google.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

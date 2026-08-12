@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   SHIPPING_ZONES,
   MAX_PER_ORDER,
@@ -41,101 +42,101 @@ type CartItem = Product & {
   qty: number;
 };
 
-const PORTFOLIO_IMAGES = [
-  "Screenshot_2026-05-29_03-06-19.webp",
-  "Screenshot_2026-05-29_03-06-39.webp",
-  "Screenshot_2026-05-29_03-07-17.webp",
-  "Screenshot_2026-05-29_03-07-47.webp",
-  "Screenshot_2026-05-29_03-08-49.webp",
-  "Screenshot_2026-05-23_01-26-22.webp",
-  "Screenshot_2026-05-23_01-26-32.webp",
-  "Screenshot_2026-05-23_01-26-52.webp",
-  "Screenshot_2026-05-23_01-27-01.webp",
-  "Screenshot_2026-05-23_01-27-15.webp",
-  "Screenshot_2026-05-23_01-27-37.webp",
-  "Screenshot_2026-05-23_01-27-45.webp",
-  "Screenshot_2026-05-23_01-28-21.webp",
-  "Screenshot_2026-05-23_01-28-37.webp",
-  "Screenshot_2026-05-23_01-28-47.webp",
-  "Screenshot_2026-05-23_01-28-57.webp",
-  "Screenshot_2026-05-23_01-29-05.webp",
-  "Screenshot_2026-05-23_01-29-12.webp",
-  "Screenshot_2026-05-23_01-29-26.webp",
-  "Screenshot_2026-05-23_01-29-44.webp",
-  "Screenshot_2026-05-23_01-30-00.webp",
-  "Screenshot_2026-05-23_01-30-15.webp",
-  "Screenshot_2026-05-23_01-30-21.webp",
-  "Screenshot_2026-05-23_01-30-33.webp",
-  "Screenshot_2026-05-23_01-30-41.webp",
-  "Screenshot_2026-05-23_01-30-48.webp",
-  "Screenshot_2026-05-23_01-30-53.webp",
-  "Screenshot_2026-05-23_01-31-07.webp",
-  "Screenshot_2026-05-23_01-31-23.webp",
-  "Screenshot_2026-05-23_01-31-29.webp",
-  "Screenshot_2026-05-23_01-31-38.webp",
-  "Screenshot_2026-05-23_01-31-43.webp",
-  "Screenshot_2026-05-23_01-31-52.webp",
-  "Screenshot_2026-05-23_01-32-04.webp",
-  "Screenshot_2026-05-23_01-32-10.webp",
-  "Screenshot_2026-05-23_01-32-14.webp",
-  "Screenshot_2026-05-23_01-32-24.webp",
-  "Screenshot_2026-05-23_01-32-39.webp",
-  "Screenshot_2026-05-23_01-32-46.webp",
-  "Screenshot_2026-05-23_01-33-01.webp",
-  "Screenshot_2026-05-23_01-33-13.webp",
-  "Screenshot_2026-05-23_01-33-33.webp",
-  "Screenshot_2026-05-23_01-33-37.webp",
-  "Screenshot_2026-05-23_01-33-42.webp",
-  "Screenshot_2026-05-23_01-33-51.webp",
-  "Screenshot_2026-05-23_01-34-01.webp",
-  "Screenshot_2026-05-23_01-34-09.webp",
-  "Screenshot_2026-05-23_01-34-18.webp",
-  "Screenshot_2026-05-23_01-34-24.webp",
-  "Screenshot_2026-05-23_01-34-31.webp",
-  "Screenshot_2026-05-23_01-34-42.webp",
-  "Screenshot_2026-05-23_01-34-52.webp",
-  "Screenshot_2026-05-23_01-35-01.webp",
-  "Screenshot_2026-05-23_01-35-17.webp",
-  "Screenshot_2026-05-23_01-35-31.webp",
-  "Screenshot_2026-05-23_01-35-42.webp",
-  "Screenshot_2026-05-23_01-35-54.webp",
-  "Screenshot_2026-05-23_01-36-02.webp",
-  "Screenshot_2026-05-23_01-36-09.webp",
-  "Screenshot_2026-05-23_01-36-23.webp",
-  "Screenshot_2026-05-23_01-36-29.webp",
-  "Screenshot_2026-05-23_01-36-36.webp",
-  "Screenshot_2026-05-23_01-36-45.webp",
-  "Screenshot_2026-05-23_01-36-50.webp",
-  "Screenshot_2026-05-23_01-37-01.webp",
-  "Screenshot_2026-05-23_01-37-14.webp",
-  "Screenshot_2026-05-23_01-37-19.webp",
-  "Screenshot_2026-05-23_01-37-26.webp",
-  "Screenshot_2026-05-23_01-37-39.webp",
-  "Screenshot_2026-05-23_01-37-51.webp",
-  "Screenshot_2026-05-23_01-38-04.webp",
-  "Screenshot_2026-05-23_01-38-12.webp",
-  "Screenshot_2026-05-23_01-38-20.webp",
-  "Screenshot_2026-05-23_01-38-23.webp",
-  "Screenshot_2026-05-23_01-38-30.webp",
-  "Screenshot_2026-05-23_01-38-41.webp",
-  "Screenshot_2026-05-23_01-38-54.webp",
-  "Screenshot_2026-05-23_01-39-00.webp",
-  "Screenshot_2026-05-23_01-39-07.webp",
-  "Screenshot_2026-05-23_01-39-11.webp",
-  "Screenshot_2026-05-23_01-39-16.webp",
-  "Screenshot_2026-05-23_01-39-33.webp",
-  "Screenshot_2026-05-23_01-39-39.webp",
-  "Screenshot_2026-05-23_01-39-48.webp",
-  "Screenshot_2026-05-23_01-39-52.webp",
-  "Screenshot_2026-05-23_01-39-57.webp",
-  "Screenshot_2026-05-23_01-40-04.webp",
-  "Screenshot_2026-05-23_01-40-11.webp",
-  "Screenshot_2026-05-23_01-40-14.webp",
-  "Screenshot_2026-05-23_01-40-19.webp",
-  "Screenshot_2026-05-23_01-40-24.webp",
-  "Screenshot_2026-05-23_01-40-29.webp",
-  "Screenshot_2026-05-23_01-40-33.webp",
-  "Screenshot_2026-05-23_01-40-41.webp",
+const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
+  { file: "Screenshot_2026-05-29_03-06-19.webp", alt: "Traditional tattoo of a cluster of eyeballs framed by a green spiked sunburst, on the forearm" },
+  { file: "Screenshot_2026-05-29_03-06-39.webp", alt: "Traditional tattoo of Taz the Tasmanian Devil spinning in a tornado, on the forearm" },
+  { file: "Screenshot_2026-05-29_03-07-17.webp", alt: "Traditional red rose tattoo with green leaves, on the ankle" },
+  { file: "Screenshot_2026-05-29_03-07-47.webp", alt: "Traditional flaming rum bottle tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-29_03-08-49.webp", alt: "Black and grey traditional hannya mask tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-26-22.webp", alt: "Black traditional cat skull tattoo with hanging chain and heart charm, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-26-32.webp", alt: "Black traditional prowling panther tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-26-52.webp", alt: "Black traditional floral tattoo with a snake and dagger, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-27-01.webp", alt: "Black and grey traditional moth tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-27-15.webp", alt: "Traditional fish tattoo with a heart-shaped tail, in red and teal" },
+  { file: "Screenshot_2026-05-23_01-27-37.webp", alt: "Traditional dagger and gem tattoo, part of a forearm sleeve" },
+  { file: "Screenshot_2026-05-23_01-27-45.webp", alt: "Black traditional portrait tattoo of a woman in a headscarf holding a bowl, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-28-21.webp", alt: "Traditional black and green olive branch tattoo on the chest" },
+  { file: "Screenshot_2026-05-23_01-28-37.webp", alt: "Black traditional rabbit tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-28-47.webp", alt: "Traditional colorful jester tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-28-57.webp", alt: "Traditional colorful pin-up mermaid with a shark, on the ribs" },
+  { file: "Screenshot_2026-05-23_01-29-05.webp", alt: "Traditional dagger through a red heart tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-29-12.webp", alt: "Traditional colorful cartoon duck tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-29-26.webp", alt: "Black and grey traditional pin-up woman smoking a cigarette, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-29-44.webp", alt: "Traditional colorful retro car with palm trees tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-30-00.webp", alt: "Black traditional tombstone tattoo with the letter E, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-30-15.webp", alt: "Black traditional tattoo of a woman with a cat and spider, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-30-21.webp", alt: "Traditional colorful jester skeleton tattoo, on the chest" },
+  { file: "Screenshot_2026-05-23_01-30-33.webp", alt: "Traditional colorful bunny-eared pin-up girl tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-30-41.webp", alt: "Traditional colorful dragon-like creature tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-30-48.webp", alt: "Traditional red and black bat-wing dagger tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-30-53.webp", alt: "Black and grey traditional portrait of a woman with a rose, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-31-07.webp", alt: "Traditional colorful mermaid tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-31-23.webp", alt: "Black traditional mermaid tattoo, on the upper arm" },
+  { file: "Screenshot_2026-05-23_01-31-29.webp", alt: "Traditional colorful pin-up portrait with a skull, on the upper arm" },
+  { file: "Screenshot_2026-05-23_01-31-38.webp", alt: "Traditional colorful parrot tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-31-43.webp", alt: "Traditional colorful bear-paw character tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-31-52.webp", alt: "Traditional colorful black panther head tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-32-04.webp", alt: "Traditional colorful eye with wings tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-32-10.webp", alt: "Traditional colorful pin-up woman tattoo, on the thigh" },
+  { file: "Screenshot_2026-05-23_01-32-14.webp", alt: "Traditional colorful harlequin frog tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-32-24.webp", alt: "Traditional colorful geisha portrait with a dragon and koi, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-32-39.webp", alt: "Traditional red and black bat-wing heart tattoo, on the knee" },
+  { file: "Screenshot_2026-05-23_01-32-46.webp", alt: "Black and grey traditional skull and crossbones tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-33-01.webp", alt: "Black traditional weeping woman with sun rays tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-33-13.webp", alt: "Black traditional kewpie doll tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-33-33.webp", alt: "Black traditional grim reaper tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-33-37.webp", alt: "Black and grey traditional frog on a string tattoo, on the chest" },
+  { file: "Screenshot_2026-05-23_01-33-42.webp", alt: "Traditional colorful bulldog head tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-33-51.webp", alt: "Black traditional olive branch tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-34-01.webp", alt: "Traditional colorful bat with red wings tattoo, on the wrist" },
+  { file: "Screenshot_2026-05-23_01-34-09.webp", alt: "Traditional colorful crowned portrait tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-34-18.webp", alt: "Traditional colorful mermaid combing her hair tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-34-24.webp", alt: "Black traditional tattoo of two faces with barbed wire and a locket, on the arm" },
+  { file: "Screenshot_2026-05-23_01-34-31.webp", alt: "Black traditional skull with a panther and blood drops tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-34-42.webp", alt: "Traditional colorful pin-up girl tattoo with the word HATE, on the arm" },
+  { file: "Screenshot_2026-05-23_01-34-52.webp", alt: "Traditional colorful couple riding a scooter through flames tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-35-01.webp", alt: "Traditional colorful nude pin-up woman tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-35-17.webp", alt: "Traditional colorful spider with flowers tattoo, on the lower back" },
+  { file: "Screenshot_2026-05-23_01-35-31.webp", alt: "Traditional colorful sailing ship on rough waves tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-35-42.webp", alt: "Black traditional dagger through a rose with blood drops tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-35-54.webp", alt: "Black traditional skull and crossbones tattoo with a memento mori banner, on the arm" },
+  { file: "Screenshot_2026-05-23_01-36-02.webp", alt: "Black traditional death's-head moth tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-36-09.webp", alt: "Traditional colorful slot machine tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-36-23.webp", alt: "Traditional colorful mermaid with flames tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-36-29.webp", alt: "Traditional colorful tombstone tattoo reading Rip My Past with dice, on the arm" },
+  { file: "Screenshot_2026-05-23_01-36-36.webp", alt: "Traditional colorful butterfly tattoo with hearts and a web pattern, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-36-45.webp", alt: "Traditional colorful cats with roses tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-36-50.webp", alt: "Traditional colorful anchor and heart with dagger tattoo, on the chest" },
+  { file: "Screenshot_2026-05-23_01-37-01.webp", alt: "Traditional colorful nude mermaid tattoo, on the upper arm" },
+  { file: "Screenshot_2026-05-23_01-37-14.webp", alt: "Black traditional scorpion and dagger tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-37-19.webp", alt: "Traditional colorful umbrella with lightning bolts tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-37-26.webp", alt: "Traditional colorful fly tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-37-39.webp", alt: "Traditional colorful skull and crossbones with a heart tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-37-51.webp", alt: "Black traditional scorpion tattoo running down the shin" },
+  { file: "Screenshot_2026-05-23_01-38-04.webp", alt: "Traditional colorful devil head tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-38-12.webp", alt: "Black traditional nesting doll tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-38-20.webp", alt: "Traditional colorful crying woman's face tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-38-23.webp", alt: "Black traditional daisy flowers tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-38-30.webp", alt: "Traditional colorful nude mermaid tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-38-41.webp", alt: "Black traditional eagle and snake tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-38-54.webp", alt: "Black and grey traditional tiki totem mask tattoo with flowers, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-39-00.webp", alt: "Traditional colorful pin-up woman with a snake tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-39-07.webp", alt: "Traditional colorful skull with a snake tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-39-11.webp", alt: "Black traditional gramophone tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-39-16.webp", alt: "Traditional colorful dagger through a rose tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-39-33.webp", alt: "Traditional colorful butterfly tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-39-39.webp", alt: "Traditional colorful eye with a spiderweb and spider tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-39-48.webp", alt: "Traditional colorful panther head with hearts tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-39-52.webp", alt: "Black traditional bison head tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-39-57.webp", alt: "Traditional colorful sacred heart with dagger and flames tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-40-04.webp", alt: "Traditional colorful cat in a kimono holding an umbrella tattoo, on the chest" },
+  { file: "Screenshot_2026-05-23_01-40-11.webp", alt: "Traditional colorful devil woman holding a mask tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-40-14.webp", alt: "Traditional colorful skeleton relaxing on a beach with a cocktail tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-40-19.webp", alt: "Traditional colorful straight razor with roses and a web tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-40-24.webp", alt: "Black and grey traditional hannya mask tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-40-29.webp", alt: "Traditional colorful tulips with a lipstick tattoo, on the forearm" },
+  { file: "Screenshot_2026-05-23_01-40-33.webp", alt: "Traditional colorful portrait of a woman in a chainmail hood tattoo, on the shoulder" },
+  { file: "Screenshot_2026-05-23_01-40-41.webp", alt: "Traditional colorful nude pin-up woman riding a motorcycle tattoo, on the shin" },
 ];
 
 // Cookie-consent persistence. Bump the version suffix to re-prompt everyone.
@@ -735,7 +736,7 @@ export default function EllieTattooer() {
         .cart-drawer {
           position: fixed;
           top: 0; right: 0;
-          width: 380px;
+          width: min(380px, 100vw);
           height: 100vh;
           background: #fff;
           border-left: 2px solid #111;
@@ -840,6 +841,8 @@ export default function EllieTattooer() {
         .mobile-cart-btn { display: none; }
         .mobile-nav { display: none; }
 
+        .nav-logo-img { height: 333px; }
+
         @media (max-width: 768px) {
           .nav-desktop { display: none !important; }
           .nav-right-desktop { display: none !important; }
@@ -858,6 +861,10 @@ export default function EllieTattooer() {
             gap: 16px;
             z-index: 99;
           }
+          /* The oversized brand logo intentionally bleeds past the 72px navbar
+             on desktop; at 333px tall it would drop far enough to cover the
+             mobile dropdown's links, so it's shrunk here to clear it. */
+          .nav-logo-img { height: 90px; }
         }
       `}</style>
 
@@ -976,11 +983,14 @@ export default function EllieTattooer() {
               zIndex: 110,
             }}
           >
-            <img
+            <Image
               src="/portfolio/betty.webp"
-              alt="Ellie Tattooer"
+              alt="Ellie Tattooer logo"
+              width={566}
+              height={800}
+              priority
+              className="nav-logo-img"
               style={{
-                height: 333,
                 width: "auto",
                 objectFit: "contain",
                 pointerEvents: "auto",
@@ -1033,7 +1043,7 @@ export default function EllieTattooer() {
             >
               <img
                 src={STUDIO_LOGO}
-                alt="Ritual Tattoo"
+                alt="Ritual Tattoo Athens logo"
                 style={{
                   height: 36,
                   width: 36,
@@ -1052,13 +1062,12 @@ export default function EllieTattooer() {
               className="ig-link"
               title="Ellie Tattooer on Instagram"
             >
-              <img
+              <Image
                 src={ELLIE_PHOTO}
-                alt="Ellie"
+                alt="Ellie Tattooer"
                 className="ig-avatar"
                 width={36}
                 height={36}
-                decoding="async"
               />
               <span style={{ fontSize: 11 }}>@ellie_tattooer</span>
             </a>
@@ -1154,7 +1163,7 @@ export default function EllieTattooer() {
             alt="Ellie Tattooer"
             width={900}
             height={600}
-            preload={true}
+            priority
             style={{
               maxWidth: "min(900px, 100vw)",
               width: "auto",
@@ -1271,12 +1280,15 @@ export default function EllieTattooer() {
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <div style={{ position: "relative" }}>
+            {/* width caps at 320px but shrinks to fit narrower phones instead
+                of overflowing the column (aspect-ratio keeps the frame's
+                proportions as it scales down). */}
+            <div style={{ position: "relative", width: "min(320px, 100%)", aspectRatio: "320 / 380" }}>
               <div
                 style={{
                   position: "relative",
-                  width: 320,
-                  height: 380,
+                  width: "100%",
+                  height: "100%",
                   background: "#111",
                   border: "3px solid #111",
                   overflow: "hidden",
@@ -1289,7 +1301,7 @@ export default function EllieTattooer() {
                   // The source is landscape (900x746) but the frame is portrait,
                   // so `cover` crops the sides: the width that actually gets used
                   // is 380px of height x the source ratio, not the frame's 320px.
-                  sizes="460px"
+                  sizes="(max-width: 480px) 90vw, 320px"
                   style={{ objectFit: "cover" }}
                 />
               </div>
@@ -1298,8 +1310,8 @@ export default function EllieTattooer() {
                   position: "absolute",
                   bottom: -16,
                   right: -16,
-                  width: 320,
-                  height: 380,
+                  width: "100%",
+                  height: "100%",
                   border: "3px solid #c0392b",
                   zIndex: -1,
                 }}
@@ -1335,9 +1347,9 @@ export default function EllieTattooer() {
           </p>
         </div>
         <div className="portfolio-grid">
-          {displayedPortfolioImages.map((fileName, idx) => (
+          {displayedPortfolioImages.map((item, idx) => (
             <div
-              key={fileName}
+              key={item.file}
               className="portfolio-item"
               onClick={() => setLightboxIndex(idx)}
               tabIndex={0}
@@ -1346,8 +1358,8 @@ export default function EllieTattooer() {
               }}
             >
               <Image
-                src={`/portfolio/${fileName}`}
-                alt={`Gallery ${idx + 1}`}
+                src={`/portfolio/${item.file}`}
+                alt={item.alt}
                 fill
                 sizes="(max-width: 640px) 25vw, 180px"
                 style={{ objectFit: "cover" }}
@@ -1385,8 +1397,8 @@ export default function EllieTattooer() {
               Close
             </button>
             <img
-              src={`/portfolio/${PORTFOLIO_IMAGES[lightboxIndex]}`}
-              alt={`Gallery ${lightboxIndex + 1}`}
+              src={`/portfolio/${PORTFOLIO_IMAGES[lightboxIndex].file}`}
+              alt={PORTFOLIO_IMAGES[lightboxIndex].alt}
               className="lightbox-img"
               onClick={(e) => e.stopPropagation()}
             />
@@ -1651,7 +1663,7 @@ export default function EllieTattooer() {
               >
                 <img
                   src={STUDIO_LOGO}
-                  alt="Ritual Tattoo"
+                  alt="Ritual Tattoo Athens logo"
                   style={{ height: 36, width: "auto" }}
                 />
                 <span
@@ -1844,7 +1856,7 @@ export default function EllieTattooer() {
             <div>
               <div className="map-container">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3144.8!2d23.7275!3d37.9755!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1bd7af504e79f%3A0x718fc53e8d527c2f!2sRitual%20Tattoo%20Athens!5e0!3m2!1sen!2sgr!4v1700000000000!5m2!1sen!2sgr"
+                  src="https://www.google.com/maps?q=Ritual%20Tattoo%20Athens%2C%20Fokionos%2011%20%26%20Ermou%2C%20Athens%2010563%2C%20Greece&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -1900,10 +1912,42 @@ export default function EllieTattooer() {
           borderTop: "3px solid #1A1A1A",
         }}
       >
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+          <nav
+            aria-label="Footer"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 20,
+              marginBottom: 20,
+              paddingBottom: 20,
+              borderBottom: "1px solid #ddd",
+            }}
+          >
+            {[
+              { href: "#about", label: "Contact" },
+              { href: "#portfolio", label: "Gallery" },
+              { href: "#shop", label: "Shop" },
+              { href: "#findme", label: "Studio Info" },
+            ].map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className="ig-link"
+                style={{ fontSize: 11 }}
+              >
+                {l.label}
+              </a>
+            ))}
+            <Link href="/privacy" className="ig-link" style={{ fontSize: 11 }}>
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="ig-link" style={{ fontSize: 11 }}>
+              Terms of Service
+            </Link>
+          </nav>
         <div
           style={{
-            maxWidth: 1400,
-            margin: "0 auto",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -1940,6 +1984,7 @@ export default function EllieTattooer() {
             </a>
             . ALL RIGHTS RESERVED.
           </p>
+        </div>
         </div>
       </footer>
 
@@ -2397,7 +2442,11 @@ export default function EllieTattooer() {
                 Αυτός ο ιστότοπος χρησιμοποιεί απαραίτητα cookies για να
                 λειτουργεί. Με τη συγκατάθεσή σου, προαιρετικά cookies όπως
                 analytics με βοηθούν να τον βελτιώσω. Έχεις τον έλεγχο: αποδοχή,
-                απόρριψη ή διαχείριση προτιμήσεων.
+                απόρριψη ή διαχείριση προτιμήσεων. Δες την{" "}
+                <Link href="/privacy" style={{ color: "#c0392b", textDecoration: "underline" }}>
+                  Πολιτική Απορρήτου
+                </Link>
+                .
               </p>
               <div className="cookie-actions">
                 <button
