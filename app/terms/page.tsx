@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function TermsOfService() {
   return (
-    <LegalPage title="Terms of Service" lastUpdated="August 12, 2026">
+    <LegalPage title="Terms of Service" lastUpdated="August 17, 2026">
       <p style={{ marginBottom: 24 }}>
         These terms apply to your use of <strong>ellietattooer.com</strong>{" "}
         and any purchase made through its shop. By using the site or placing
@@ -35,9 +35,10 @@ export default function TermsOfService() {
 
       <h2 style={sectionH2}>The online shop</h2>
       <p style={{ marginBottom: 12 }}>
-        The shop currently sells one item, a limited-edition print, in
-        strictly limited quantity. Prices are shown in EUR and include 24%
-        Greek VAT. Shipping is currently offered within Greece only;
+        The shop currently sells a limited-edition print, available in a
+        strictly limited quantity, and an oversized t-shirt, available in
+        multiple sizes while stocks last. Prices are shown in EUR and include
+        24% Greek VAT. Shipping is currently offered within Greece only;
         international buyers are invited to arrange a purchase by Instagram
         DM instead.
       </p>

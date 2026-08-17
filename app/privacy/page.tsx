@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicy() {
   return (
-    <LegalPage title="Privacy Policy" lastUpdated="August 12, 2026">
+    <LegalPage title="Privacy Policy" lastUpdated="August 17, 2026">
       <p style={{ marginBottom: 24 }}>
         This Privacy Policy explains how Ellie Tattooer (&quot;I&quot;, &quot;me&quot;,
         &quot;this site&quot;) handles information collected through{" "}
@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
         to plan the appointment.
       </p>
       <p style={{ marginBottom: 12 }}>
-        <strong>When you buy a print in the shop</strong>, checkout is handled
+        <strong>When you buy something from the shop</strong>, checkout is handled
         entirely by <strong>Stripe</strong>. I never see or store your card
         details. Stripe collects your name, email, shipping address, and
         payment information to process the order and ships that data to me
