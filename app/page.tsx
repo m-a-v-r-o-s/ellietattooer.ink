@@ -68,7 +68,6 @@ const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
   { file: "Screenshot_2026-08-17_16-24-42.webp", alt: "Black and grey traditional swallow tattoo with flowers, on the forearm" },
   { file: "Screenshot_2026-08-17_16-24-49.webp", alt: "Black and grey traditional koi fish with wings tattoo, on the shin" },
   { file: "Screenshot_2026-08-17_16-25-10.webp", alt: "Traditional colorful eagle fighting a snake tattoo, on the shoulder" },
-  { file: "Screenshot_2026-08-17_16-25-27.webp", alt: "Black and grey traditional grim reaper tattoo with a rose, fresh on the calf" },
   { file: "Screenshot_2026-08-17_16-25-35.webp", alt: "Traditional colorful bloody scythe tattoo, on the wrist" },
   { file: "Screenshot_2026-08-17_16-25-38.webp", alt: "Black and grey traditional dagger tattoo, on the forearm" },
   { file: "Screenshot_2026-08-17_16-25-43.webp", alt: "Black and grey traditional grim reaper tattoo with a rose, healed on the calf" },
@@ -937,7 +936,7 @@ export default function EllieTattooer() {
           }
           /* Oversized brand logo intentionally bleeds past the 72px navbar,
              same as desktop, just at a smaller scale. */
-          .nav-logo-img { height: 210px; }
+          .nav-logo-img { height: 280px; }
         }
       `}</style>
 
