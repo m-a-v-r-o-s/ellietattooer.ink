@@ -14,10 +14,43 @@ export function getStripe(): Stripe | null {
 }
 
 /**
+ * Units of `productId` paid for in a single PaymentIntent.
+ *
+ * Orders created before the multi-product cart used flat `metadata.product` /
+ * `metadata.qty` (one product per order). Orders since carry a JSON
+ * `metadata.items` array so a single checkout can mix products. Both are read
+ * here so old paid orders keep counting correctly against today's stock.
+ */
+function soldUnitsFor(pi: Stripe.PaymentIntent, productId: string): number {
+  const md = pi.metadata ?? {};
+
+  if (md.product === productId) {
+    const qty = Number(md.qty ?? "1");
+    return Number.isFinite(qty) && qty > 0 ? qty : 1;
+  }
+
+  if (md.items) {
+    try {
+      const items = JSON.parse(md.items) as { id?: string; qty?: number }[];
+      return items
+        .filter((item) => item.id === productId)
+        .reduce((sum, item) => {
+          const qty = Number(item.qty);
+          return sum + (Number.isFinite(qty) && qty > 0 ? qty : 1);
+        }, 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  return 0;
+}
+
+/**
  * How many units of `productId` have been paid for so far.
  *
- * Stripe is the source of truth: we tag each PaymentIntent with the product id
- * and the purchased quantity, then sum succeeded ones. No separate database.
+ * Stripe is the source of truth: we tag each PaymentIntent's metadata with
+ * what was bought, then sum succeeded ones. No separate database.
  *
  * Uses the List API (not Search): it's strongly consistent and available on
  * every account immediately, whereas the Search index is eventually-consistent
@@ -40,9 +73,7 @@ export async function getSoldCount(
 
     for (const pi of res.data) {
       if (pi.status !== "succeeded") continue;
-      if (pi.metadata?.product !== productId) continue;
-      const qty = Number(pi.metadata?.qty ?? "1");
-      sold += Number.isFinite(qty) && qty > 0 ? qty : 1;
+      sold += soldUnitsFor(pi, productId);
     }
 
     startingAfter = res.has_more
@@ -104,4 +135,75 @@ export async function getSoldCountCached(
     });
 
   return inFlight;
+}
+
+export type Order = {
+  id: string;
+  created: number; // unix seconds
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  address: Stripe.Address | null;
+  amountTotal: number | null; // cents, VAT + shipping included
+  currency: string | null;
+  zone: string | null;
+  items: { id: string; size?: string; qty: number }[];
+};
+
+function parseItems(md: Stripe.Metadata | null): Order["items"] {
+  if (!md?.items) return [];
+  try {
+    const parsed = JSON.parse(md.items) as { id?: string; size?: string; qty?: number }[];
+    return parsed
+      .filter((i): i is { id: string; size?: string; qty?: number } => typeof i.id === "string")
+      .map((i) => ({ id: i.id, size: i.size, qty: Number(i.qty) > 0 ? Number(i.qty) : 1 }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Paid orders, most recent first. Stripe is the source of truth (no
+ * database) — each Checkout Session already carries the buyer's shipping
+ * details and the cart contents (tagged in `metadata.items` at checkout), so
+ * a completed Session *is* the order record.
+ *
+ * Paginated with Checkout Sessions' native id-based cursor. `startingAfter`
+ * is the last order id from the previous page.
+ */
+export async function listOrders(
+  stripe: Stripe,
+  { limit = 20, startingAfter }: { limit?: number; startingAfter?: string } = {},
+): Promise<{ orders: Order[]; hasMore: boolean; nextCursor: string | null }> {
+  const res = await stripe.checkout.sessions.list({
+    limit: Math.min(Math.max(limit, 1), 100),
+    ...(startingAfter ? { starting_after: startingAfter } : {}),
+  });
+
+  const orders = res.data
+    .filter((s) => s.payment_status === "paid")
+    .map((s) => {
+      const shipping = s.collected_information?.shipping_details;
+      return {
+        id: s.id,
+        created: s.created,
+        email: s.customer_details?.email ?? null,
+        name: shipping?.name ?? s.customer_details?.name ?? null,
+        phone: s.customer_details?.phone ?? null,
+        address: shipping?.address ?? s.customer_details?.address ?? null,
+        amountTotal: s.amount_total,
+        currency: s.currency,
+        zone: s.metadata?.zone ?? null,
+        items: parseItems(s.metadata),
+      };
+    });
+
+  return {
+    orders,
+    // has_more reflects the raw page, not the paid-only filter above, so the
+    // "next page" cursor always advances even when a page is all abandoned
+    // (unpaid) checkouts.
+    hasMore: res.has_more,
+    nextCursor: res.data.length ? res.data[res.data.length - 1].id : null,
+  };
 }

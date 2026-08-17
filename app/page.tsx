@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   SHIPPING_ZONES,
-  MAX_PER_ORDER,
-  TOTAL_STOCK,
   INTERNATIONAL_DM_URL,
+  SCARCE_PRODUCT_ID,
+  basePriceCents,
+  getProduct,
 } from "@/lib/shop";
 import { zoneFromPostalCode } from "@/lib/postal-zones";
 
@@ -15,20 +16,40 @@ const STUDIO_LOGO =
   "https://ritualtattoo.gr/wp-content/uploads/2018/05/ritual_logo_banner_dark_150.png";
 const ELLIE_PHOTO = "/Screenshot_2026-05-22_19-59-38.webp";
 
+// Price/basePrice are derived from lib/shop's cents amounts so the storefront
+// can never drift from what checkout actually charges.
+const BACKPIECE = getProduct("backpiece-print")!;
+const TEE = getProduct("oversized-tee")!;
+
 const PRODUCTS = [
   {
-    id: 1,
+    id: BACKPIECE.id,
     name: "BACKPIECE PRINT 50 × 70 cm",
-    basePrice: 60,
-    price: 74.40,
+    basePrice: basePriceCents(BACKPIECE.amount) / 100,
+    price: BACKPIECE.amount / 100,
     sizes: ["50×70CM"],
     images: ["/portfolio/Backpiece-print.webp", "/portfolio/Backpiece-print2.webp"],
     makingOf: "https://www.instagram.com/p/DWwoJxrjTiL/",
   },
+  {
+    id: TEE.id,
+    name: "OVERSIZED T-SHIRT",
+    basePrice: basePriceCents(TEE.amount) / 100,
+    price: TEE.amount / 100,
+    sizes: TEE.sizes!,
+    images: [
+      "/portfolio/Oversized-tee2.webp",
+      "/portfolio/Oversized-tee3.webp",
+    ],
+  },
 ];
 
+// Products with a real size choice show it in the cart; the print's one
+// "size" is really just its fixed dimensions, already in its name.
+const MULTI_SIZE_IDS = new Set(PRODUCTS.filter((p) => p.sizes.length > 1).map((p) => p.id));
+
 type Product = {
-  id: number;
+  id: string;
   name: string;
   price: number;
   basePrice?: number;
@@ -43,6 +64,32 @@ type CartItem = Product & {
 };
 
 const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
+  { file: "Screenshot_2026-08-17_16-24-32.webp", alt: "Traditional Betty Boop tattoo, on the calf" },
+  { file: "Screenshot_2026-08-17_16-24-42.webp", alt: "Black and grey traditional swallow tattoo with flowers, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-24-49.webp", alt: "Black and grey traditional koi fish with wings tattoo, on the shin" },
+  { file: "Screenshot_2026-08-17_16-25-10.webp", alt: "Traditional colorful eagle fighting a snake tattoo, on the shoulder" },
+  { file: "Screenshot_2026-08-17_16-25-27.webp", alt: "Black and grey traditional grim reaper tattoo with a rose, fresh on the calf" },
+  { file: "Screenshot_2026-08-17_16-25-35.webp", alt: "Traditional colorful bloody scythe tattoo, on the wrist" },
+  { file: "Screenshot_2026-08-17_16-25-38.webp", alt: "Black and grey traditional dagger tattoo, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-25-43.webp", alt: "Black and grey traditional grim reaper tattoo with a rose, healed on the calf" },
+  { file: "Screenshot_2026-08-17_16-25-52.webp", alt: "Traditional red pin-up girl tattoo with blonde hair, on the upper arm" },
+  { file: "Screenshot_2026-08-17_16-26-00.webp", alt: "Black and grey traditional cobra snake tattoo with a rose and a skull, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-26-07.webp", alt: "Black traditional bomb tattoo with smoke, part of a forearm sleeve" },
+  { file: "Screenshot_2026-08-17_16-26-18.webp", alt: "Traditional colorful strawberries tattoo with vine and flowers, on the leg" },
+  { file: "Screenshot_2026-08-17_16-26-32.webp", alt: "Traditional colorful portrait tattoo of a woman wearing a checkered headscarf, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-26-45.webp", alt: "Traditional colorful mermaid tattoo with a spear, on the upper arm" },
+  { file: "Screenshot_2026-08-17_16-26-51.webp", alt: "Black traditional flower tattoo, part of a forearm sleeve" },
+  { file: "Screenshot_2026-08-17_16-27-02.webp", alt: "Traditional colorful she-devil portrait tattoo with horns and stars, on the arm" },
+  { file: "Screenshot_2026-08-17_16-27-12.webp", alt: "Traditional colorful winged wheel tattoo, on the leg" },
+  { file: "Screenshot_2026-08-17_16-27-18.webp", alt: "Black traditional olive branch tattoo, on the shoulder" },
+  { file: "Screenshot_2026-08-17_16-27-38.webp", alt: "Traditional colorful olive branch tattoo, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-27-48.webp", alt: "Traditional colorful pin-up woman with peacock feathers tattoo, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-27-59.webp", alt: "Traditional colorful sad clown tattoo with a top hat, on the arm" },
+  { file: "Screenshot_2026-08-17_16-28-04.webp", alt: "Black traditional scorpion tattoo, on the forearm" },
+  { file: "Screenshot_2026-08-17_16-28-16.webp", alt: "Traditional colorful gravestone tattoo reading 'RIP MY PAST', on the arm" },
+  { file: "Screenshot_2026-08-17_16-28-28.webp", alt: "Black traditional death's-head moth tattoo with eyes on its wings, on the chest" },
+  { file: "Screenshot_2026-08-17_16-28-40.webp", alt: "Traditional colorful red devil baby tattoo with a pitchfork, on the leg" },
+  { file: "Screenshot_2026-08-17_16-29-17.webp", alt: "Traditional colorful tiger head tattoo, on the chest" },
   { file: "Screenshot_2026-05-29_03-06-19.webp", alt: "Traditional tattoo of a cluster of eyeballs framed by a green spiked sunburst, on the forearm" },
   { file: "Screenshot_2026-05-29_03-06-39.webp", alt: "Traditional tattoo of Taz the Tasmanian Devil spinning in a tornado, on the forearm" },
   { file: "Screenshot_2026-05-29_03-07-17.webp", alt: "Traditional red rose tattoo with green leaves, on the ankle" },
@@ -160,14 +207,17 @@ export default function EllieTattooer() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartShake, setCartShake] = useState(false);
-  const [addedFeedback, setAddedFeedback] = useState<number | null>(null);
+  const [addedFeedback, setAddedFeedback] = useState<string | null>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Scoped to the one stock-limited product (the print) — everything else
+  // sells unlimited, so it doesn't need an availability round trip.
   const [soldOut, setSoldOut] = useState(false);
-  const [remaining, setRemaining] = useState(TOTAL_STOCK);
-  const [maxPerOrder, setMaxPerOrder] = useState(MAX_PER_ORDER);
+  const [remaining, setRemaining] = useState(BACKPIECE.totalStock ?? 0);
+  const [scarceMaxPerOrder, setScarceMaxPerOrder] = useState(BACKPIECE.maxPerOrder);
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
   const [postalCode, setPostalCode] = useState("");
   const [shipZone, setShipZone] = useState("");
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -229,12 +279,22 @@ export default function EllieTattooer() {
       if (!res.ok) return;
       const data = await res.json();
       setSoldOut(!data.available);
-      setRemaining(Math.max(0, Number(data.remaining ?? TOTAL_STOCK)));
-      setMaxPerOrder(Math.max(0, Number(data.maxPerOrder ?? MAX_PER_ORDER)));
+      setRemaining(Math.max(0, Number(data.remaining ?? BACKPIECE.totalStock ?? 0)));
+      setScarceMaxPerOrder(Math.max(0, Number(data.maxPerOrder ?? BACKPIECE.maxPerOrder)));
     } catch {
       // keep optimistic defaults if the check fails
     }
   }, []);
+
+  // Per-product cart cap: the print is stock-limited (server-verified via
+  // /api/availability above); everything else uses its own fixed cap.
+  const capFor = useCallback(
+    (id: string) =>
+      id === SCARCE_PRODUCT_ID
+        ? Math.max(1, scarceMaxPerOrder)
+        : (getProduct(id)?.maxPerOrder ?? 99),
+    [scarceMaxPerOrder],
+  );
 
   useEffect(() => {
     refreshAvailability();
@@ -259,18 +319,22 @@ export default function EllieTattooer() {
   }, [refreshAvailability]);
 
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+  const cartHasScarceItem = cart.some((i) => i.id === SCARCE_PRODUCT_ID);
 
   // Create a Stripe Checkout session for the current cart + shipping zone,
   // then hand the customer off to Stripe's hosted payment page.
   const handleCheckout = useCallback(async () => {
-    if (checkingOut || soldOut || cart.length === 0 || !shipZone) return;
+    if (checkingOut || (cartHasScarceItem && soldOut) || cart.length === 0 || !shipZone) return;
     setCheckoutError(null);
     setCheckingOut(true);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: totalItems, zone: shipZone }),
+        body: JSON.stringify({
+          items: cart.map((i) => ({ id: i.id, size: i.size, qty: i.qty })),
+          zone: shipZone,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.url) {
@@ -288,12 +352,12 @@ export default function EllieTattooer() {
       setCheckoutError("Couldn’t reach checkout. Please try again.");
       setCheckingOut(false);
     }
-  }, [checkingOut, soldOut, cart.length, shipZone, totalItems, refreshAvailability]);
+  }, [checkingOut, soldOut, cartHasScarceItem, cart, shipZone, refreshAvailability]);
 
-  const addToCart = (product: Product) => {
-    const size = product.sizes[0];
-    if (!size || soldOut) return;
-    const cap = Math.max(1, maxPerOrder);
+  const addToCart = (product: Product, size: string) => {
+    if (!size) return;
+    if (product.id === SCARCE_PRODUCT_ID && soldOut) return;
+    const cap = capFor(product.id);
     setCart((prev) => {
       const existing = prev.find((i) => i.id === product.id && i.size === size);
       if (existing) {
@@ -317,16 +381,16 @@ export default function EllieTattooer() {
     }
   };
 
-  const removeFromCart = (id: number, size: string) =>
+  const removeFromCart = (id: string, size: string) =>
     setCart((prev) => prev.filter((i) => !(i.id === id && i.size === size)));
 
-  const updateQty = (id: number, size: string, delta: number) =>
+  const updateQty = (id: string, size: string, delta: number) =>
     setCart((prev) =>
       prev.flatMap((i) => {
         if (i.id !== id || i.size !== size) return [i];
         const next = i.qty + delta;
         if (next <= 0) return [];
-        if (next > maxPerOrder) return [i];
+        if (next > capFor(id)) return [i];
         return [{ ...i, qty: next }];
       }),
     );
@@ -336,6 +400,10 @@ export default function EllieTattooer() {
   };
 
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  // basePrice is undefined only if a cart item somehow lacks it; falls back
+  // to the tax-inclusive price so VAT reads as zero rather than throwing.
+  const cartBaseTotal = cart.reduce((s, i) => s + (i.basePrice ?? i.price) * i.qty, 0);
+  const cartVat = cartTotal - cartBaseTotal;
   const selectedZone = SHIPPING_ZONES.find((z) => z.id === shipZone);
   const shippingCost = selectedZone ? selectedZone.amount / 100 : 0;
 
@@ -859,12 +927,14 @@ export default function EllieTattooer() {
             border-bottom: 2px solid #111;
             padding: 16px 24px;
             gap: 16px;
-            z-index: 99;
+            /* .mobile-nav is a sibling of <nav>, which has its own z-index:100
+               stacking context, so this must beat 100 (not just the logo's
+               inner z-index) to render above the bled-through logo below. */
+            z-index: 101;
           }
-          /* The oversized brand logo intentionally bleeds past the 72px navbar
-             on desktop; at 333px tall it would drop far enough to cover the
-             mobile dropdown's links, so it's shrunk here to clear it. */
-          .nav-logo-img { height: 90px; }
+          /* Oversized brand logo intentionally bleeds past the 72px navbar,
+             same as desktop, just at a smaller scale. */
+          .nav-logo-img { height: 210px; }
         }
       `}</style>
 
@@ -1474,26 +1544,7 @@ export default function EllieTattooer() {
                       </div>
                     </div>
                   )}
-                  {!soldOut && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 12,
-                        left: 12,
-                        background: "#c0392b",
-                        color: "#fff",
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: "0.15em",
-                        padding: "4px 10px",
-                        zIndex: 2,
-                      }}
-                    >
-                      {remaining} LEFT
-                    </div>
-                  )}
-                  {soldOut && (
+                  {product.id === SCARCE_PRODUCT_ID && soldOut && (
                     <div
                       style={{
                         position: "absolute",
@@ -1554,41 +1605,83 @@ export default function EllieTattooer() {
                         marginLeft: 12,
                       }}
                     >
-                      €{product.basePrice ?? product.price} + VAT
+                      €{product.price}
                     </span>
                   </div>
                   {(() => {
-                    const inCart = cart.some((i) => i.id === product.id);
+                    const isScarce = product.id === SCARCE_PRODUCT_ID;
+                    const soldOutDisabled = isScarce && soldOut;
+                    const resolvedSize =
+                      product.sizes.length > 1 ? selectedSizes[product.id] : product.sizes[0];
+                    const sizeMissing = !resolvedSize;
+                    const disabled = soldOutDisabled || sizeMissing;
+                    const inCart = !!resolvedSize && cart.some(
+                      (i) => i.id === product.id && i.size === resolvedSize,
+                    );
                     const justAdded = addedFeedback === product.id;
                     const viewCart = inCart && !justAdded;
                     return (
-                      <button
-                        className={`btn-primary ${justAdded ? "added-pulse" : ""}`}
-                        style={{
-                          width: "100%",
-                          opacity: soldOut ? 0.5 : 1,
-                          cursor: soldOut ? "not-allowed" : "pointer",
-                          background: viewCart ? "#fff" : undefined,
-                          color: viewCart ? "#111" : undefined,
-                          border: viewCart ? "2px solid #111" : undefined,
-                        }}
-                        onClick={() =>
-                          soldOut
-                            ? undefined
-                            : viewCart || justAdded
-                              ? setCartOpen(true)
-                              : addToCart(product)
-                        }
-                        disabled={soldOut}
-                      >
-                        {soldOut
-                          ? "Sold Out"
-                          : justAdded
-                            ? "✓ Added to Cart"
-                            : viewCart
-                              ? "View Cart"
-                              : "Add to Cart"}
-                      </button>
+                      <>
+                        {product.sizes.length > 1 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+                            {product.sizes.map((size) => {
+                              const active = resolvedSize === size;
+                              return (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))
+                                  }
+                                  style={{
+                                    minWidth: 40,
+                                    padding: "6px 10px",
+                                    border: "2px solid #111",
+                                    background: active ? "hsl(348, 100%, 86%)" : "#fff",
+                                    color: "#111",
+                                    fontFamily: "var(--font-oswald), sans-serif",
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    letterSpacing: "0.05em",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <button
+                          className={`btn-primary ${justAdded ? "added-pulse" : ""}`}
+                          style={{
+                            width: "100%",
+                            opacity: disabled ? 0.5 : 1,
+                            cursor: disabled ? "not-allowed" : "pointer",
+                            background: viewCart ? "#fff" : undefined,
+                            color: viewCart ? "#111" : undefined,
+                            border: viewCart ? "2px solid #111" : undefined,
+                          }}
+                          onClick={() =>
+                            disabled
+                              ? undefined
+                              : viewCart || justAdded
+                                ? setCartOpen(true)
+                                : addToCart(product, resolvedSize!)
+                          }
+                          disabled={disabled}
+                        >
+                          {soldOutDisabled
+                            ? "Sold Out"
+                            : sizeMissing
+                              ? "Select a Size"
+                              : justAdded
+                                ? "✓ Added to Cart"
+                                : viewCart
+                                  ? "View Cart"
+                                  : "Add to Cart"}
+                        </button>
+                      </>
                     );
                   })()}
                   {product.makingOf && (
@@ -2084,7 +2177,7 @@ export default function EllieTattooer() {
                     borderBottom: "1px solid #eee",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                     <p
                       style={{
                         fontFamily: "var(--font-oswald), sans-serif",
@@ -2095,6 +2188,9 @@ export default function EllieTattooer() {
                       }}
                     >
                       {item.name}
+                      {MULTI_SIZE_IDS.has(item.id) && item.size && (
+                        <span style={{ color: "#888", fontWeight: 400 }}> — {item.size}</span>
+                      )}
                     </p>
                     <span
                       style={{
@@ -2108,6 +2204,18 @@ export default function EllieTattooer() {
                       €{(item.price * item.qty).toFixed(2)}
                     </span>
                   </div>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-oswald), sans-serif",
+                      fontSize: 11,
+                      color: "#aaa",
+                      letterSpacing: "0.05em",
+                      marginBottom: 10,
+                    }}
+                  >
+                    €{((item.basePrice ?? item.price) * item.qty).toFixed(2)} excl. VAT + €
+                    {((item.price - (item.basePrice ?? item.price)) * item.qty).toFixed(2)} VAT
+                  </p>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     {/* Qty stepper */}
                     <div style={{ display: "flex", alignItems: "center", border: "2px solid #111", height: 32 }}>
@@ -2133,8 +2241,8 @@ export default function EllieTattooer() {
                       </span>
                       <button
                         onClick={() => updateQty(item.id, item.size, +1)}
-                        disabled={item.qty >= maxPerOrder}
-                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: item.qty >= maxPerOrder ? "not-allowed" : "pointer", fontSize: 18, lineHeight: 1, color: item.qty >= maxPerOrder ? "#ccc" : "#111" }}
+                        disabled={item.qty >= capFor(item.id)}
+                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: item.qty >= capFor(item.id) ? "not-allowed" : "pointer", fontSize: 18, lineHeight: 1, color: item.qty >= capFor(item.id) ? "#ccc" : "#111" }}
                       >
                         +
                       </button>
@@ -2334,8 +2442,21 @@ export default function EllieTattooer() {
                     color: "#444",
                   }}
                 >
-                  <span>Subtotal</span>
-                  <span>€{cartTotal.toFixed(2)}</span>
+                  <span>Subtotal (excl. VAT)</span>
+                  <span>€{cartBaseTotal.toFixed(2)}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                    fontFamily: "var(--font-oswald), sans-serif",
+                    fontSize: 15,
+                    color: "#444",
+                  }}
+                >
+                  <span>VAT (24%)</span>
+                  <span>€{cartVat.toFixed(2)}</span>
                 </div>
                 <div
                   style={{

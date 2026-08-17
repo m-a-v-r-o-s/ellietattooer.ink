@@ -1,6 +1,10 @@
 import { getStripe, getSoldCountCached } from "@/lib/stripe";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
-import { PRODUCT, TOTAL_STOCK, MAX_PER_ORDER } from "@/lib/shop";
+import { getProduct, SCARCE_PRODUCT_ID } from "@/lib/shop";
+
+const PRODUCT = getProduct(SCARCE_PRODUCT_ID)!;
+const TOTAL_STOCK = PRODUCT.totalStock!;
+const MAX_PER_ORDER = PRODUCT.maxPerOrder;
 
 export const runtime = "nodejs";
 

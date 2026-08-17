@@ -34,6 +34,15 @@ const CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      // Shareable direct links to each homepage section.
+      { source: "/shop", destination: "/#shop", permanent: false },
+      { source: "/gallery", destination: "/#portfolio", permanent: false },
+      { source: "/contact", destination: "/#about", permanent: false },
+      { source: "/studio", destination: "/#findme", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {
@@ -55,6 +64,12 @@ const nextConfig: NextConfig = {
             value: "max-age=63072000; includeSubDomains",
           },
         ],
+      },
+      {
+        // Belt-and-braces alongside metadata.robots and robots.ts on the
+        // page itself — a crawler that ignores both still gets this.
+        source: "/admin/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
     ];
   },

@@ -1,16 +1,26 @@
 # Shop / Checkout setup
 
-The shop sells one product — **Backpiece Print 50×70cm**, €60 (tax-inclusive) —
-via **Stripe Checkout**, hosted on **Railway**.
+The shop sells two products, both prices tax-inclusive, via **Stripe
+Checkout**, hosted on **Railway**:
+
+- **Backpiece Print 50×70cm** — €70, single size.
+- **Oversized T-Shirt** — €35, sizes XS/S/M/L/XL.
+
+Product config (price, sizes, stock) lives in `lib/shop.ts`.
 
 ## How it works
 
-- **Inventory:** 3 total, **shown** on the page as an "N LEFT" badge. Each paid
-  order is tagged in Stripe; before every checkout the server tallies paid
-  units. At 3 the product flips to **SOLD OUT** automatically. No database —
-  Stripe is the source of truth. The tally is cached briefly (60s for the badge,
-  5s for checkout) so a burst of traffic can't hammer the Stripe API.
-- **Per order:** up to **1** print, never more than what's left.
+- **Inventory:** only the print is stock-limited — 3 total, tracked (not
+  shown on the page). Each paid order is tagged in Stripe; before every
+  checkout the server tallies paid units. At 3 the print flips to
+  **SOLD OUT** automatically. No database — Stripe is the source of truth.
+  The tally is cached briefly (60s for the page's own check, 5s for
+  checkout) so a burst of traffic can't hammer the Stripe API. The t-shirt
+  has no stock limit.
+- **Per order:** up to **1** print, up to **10** t-shirts (per size), never
+  more of the print than what's left.
+- **Cart:** can mix both products; each line is priced and capped
+  server-side from `lib/shop.ts`, never from what the client sends.
 - **Shipping:** Greece only, 5 zones (`lib/shop.ts`), prices include 24% VAT.
   Choosing **Outside Greece** hides checkout and shows a "DM on Instagram" link.
 - **After payment:** customer returns to `/?checkout=success`, the cart clears
@@ -43,6 +53,19 @@ with the confirmation banner. Make 3 test purchases and the card shows SOLD OUT
 Paid orders (with the buyer's shipping address) appear in your
 **Stripe Dashboard → Payments**. To get an email on every sale, enable it in
 **Stripe → Settings → Notifications**. Stripe also emails the buyer a receipt.
+
+There's also a lightweight orders view built into the site itself, at
+**`/admin/orders`** — a read-only table (date, customer, items, shipping
+address, total), newest first, with an "Older orders" link to page back
+through history. No separate database; it reads straight from Stripe
+Checkout Sessions.
+
+It's protected by HTTP Basic Auth. In **Railway → Variables**, add:
+- `ADMIN_USER = ...`
+- `ADMIN_PASSWORD = ...` (pick a real password)
+
+Without both set, `/admin/orders` returns 503 rather than opening
+unprotected. The page is also excluded from search indexing.
 
 ## Railway notes
 

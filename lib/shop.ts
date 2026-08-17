@@ -1,22 +1,59 @@
 // Shared shop configuration used by both the client UI and the checkout API.
 // Keep this free of secrets — it is safe to import into client components.
+//
+// Prices are VAT-inclusive (24% Greek VAT). `amount` is the authoritative
+// tax-included price in cents — checkout always prices from here, never from
+// anything the client sends. `basePrice` (excl. VAT, in cents) is derived so
+// the storefront and cart can show base price and VAT as separate lines.
 
-export const PRODUCT = {
-  id: "backpiece-print",
-  name: "Backpiece Print 50×70cm",
-  amount: 7440, // €74.40 in cents — €60 + 24% VAT
-  currency: "eur",
-  image: "/portfolio/Backpiece-print.webp",
-} as const;
+export type ShopProduct = {
+  id: string;
+  name: string;
+  amount: number; // cents, VAT included — authoritative for Stripe
+  currency: "eur";
+  image: string;
+  sizes?: string[];
+  maxPerOrder: number;
+  // Present only for stock-limited products; absent = unlimited.
+  totalStock?: number;
+};
 
-// Total units that will ever be sold. This file is imported by the storefront,
-// so this number ships in the client bundle — and /api/availability returns the
-// live remaining count on purpose, to drive the "N LEFT" scarcity badge. Both
-// are deliberate; don't put anything here you wouldn't publish.
-export const TOTAL_STOCK = 3;
+const VAT_RATE = 0.24;
 
-// Max units a single customer can buy in one order.
-export const MAX_PER_ORDER = 1;
+export const PRODUCTS: ShopProduct[] = [
+  {
+    id: "backpiece-print",
+    name: "Backpiece Print 50×70cm",
+    amount: 7000, // €70.00, VAT included
+    currency: "eur",
+    image: "/portfolio/Backpiece-print.webp",
+    maxPerOrder: 1,
+    totalStock: 3,
+  },
+  {
+    id: "oversized-tee",
+    name: "Boxy Oversized T-Shirt",
+    amount: 3500, // €35.00, VAT included
+    currency: "eur",
+    image: "/portfolio/Oversized-tee2.webp",
+    sizes: ["S", "M", "L", "XL"],
+    maxPerOrder: 10,
+  },
+];
+
+export function getProduct(id: string): ShopProduct | undefined {
+  return PRODUCTS.find((p) => p.id === id);
+}
+
+/** Tax-exclusive price in cents, rounded to the nearest cent. */
+export function basePriceCents(amount: number): number {
+  return Math.round(amount / (1 + VAT_RATE));
+}
+
+// The only stock-limited product today. Availability checks are scoped to
+// this id — a generic multi-product stock endpoint isn't needed while
+// everything else sells unlimited.
+export const SCARCE_PRODUCT_ID = "backpiece-print";
 
 export type ShippingZone = {
   id: string;
