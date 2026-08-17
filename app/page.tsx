@@ -893,15 +893,18 @@ export default function EllieTattooer() {
         @media (max-width: 768px) {
           .shop-grid {
             display: flex;
-            flex-direction: row;
-            justify-content: center;
-            overflow-x: auto;
-            gap: 16px;
-            padding-bottom: 12px;
-            -webkit-overflow-scrolling: touch;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
           }
           .shop-grid > * {
-            flex: 0 0 min(75vw, 340px);
+            width: 100%;
+            max-width: 400px;
+          }
+          /* Feature the t-shirt above the print on mobile, where the shop
+             can only show one item at a time. */
+          .shop-grid [data-product="oversized-tee"] {
+            order: -1;
           }
         }
 
@@ -1493,7 +1496,7 @@ export default function EllieTattooer() {
           </div>
           <div className="shop-grid">
             {PRODUCTS.map((product) => (
-              <div key={product.id} className="product-card">
+              <div key={product.id} className="product-card" data-product={product.id}>
                 {/* Product Image */}
                 <div className="product-media">
                   {product.images && product.images.length > 0 ? (
