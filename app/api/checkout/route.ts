@@ -167,6 +167,7 @@ export async function POST(request: Request) {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items,
+    phone_number_collection: { enabled: true },
     shipping_address_collection: { allowed_countries: ["GR"] },
     shipping_options: [
       {
