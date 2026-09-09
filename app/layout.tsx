@@ -12,7 +12,7 @@ const oswald = Oswald({
 });
 
 const DESCRIPTION =
-  "American Traditional tattoo artist working out of Ritual Tattoo Athens, Fokionos 11 & Ermou. Browse the gallery, shop signed prints, and get in touch to book a session.";
+  "American Traditional tattoo artist working out of Ritual Tattoo Athens, Fokionos 11 & Ermou. Τατουάζ στην Αθήνα. Browse the gallery, shop signed prints, and get in touch to book a session.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -64,6 +64,7 @@ const STUDIO_SCHEMA = {
     addressCountry: "GR",
   },
   areaServed: { "@type": "City", name: "Athens" },
+  knowsLanguage: ["el", "en"],
   sameAs: [
     "https://www.instagram.com/ellie_tattooer/",
     "https://www.instagram.com/ritualtattooathens/",

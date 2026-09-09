@@ -1993,6 +1993,31 @@ export default function EllieTattooer() {
                   Fokionos 11 &amp; Ermou, Athens 10563
                 </span>
               </div>
+
+              {/* Greek summary of the same details above. The studio is in
+                  Athens and most walk-in clients search in Greek, but every
+                  other word on this page is English, so none of that intent
+                  could reach the site. Server-rendered and visible: real
+                  content for readers, not a crawler-only block. */}
+              <p
+                lang="el"
+                style={{
+                  fontFamily: "var(--font-oswald), sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1.9,
+                  letterSpacing: "0.02em",
+                  color: "#555",
+                  marginTop: 24,
+                  paddingTop: 20,
+                  borderTop: "1px solid #e0d6d6",
+                }}
+              >
+                Τατουάζ σε στυλ American Traditional στην Αθήνα. Η Ellie
+                δουλεύει στο στούντιο Ritual Tattoo Athens, Φωκίωνος 11 &amp;
+                Ερμού, Αθήνα 10563. Για ραντεβού και ερωτήσεις, στείλτε μήνυμα
+                στο Instagram <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer" style={{ color: "#c0392b" }}>@ellie_tattooer</a>{" "}
+                ή email στο elliemavrou@gmail.com.
+              </p>
             </div>
           </div>
         </div>
