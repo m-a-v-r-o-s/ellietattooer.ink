@@ -37,13 +37,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // Apex and www both resolve to this app. Without a redirect Google
-      // treats them as two competing sites for every page. The apex is
-      // canonical: it is what lib/site.ts emits and what Google has already
-      // indexed, so consolidating onto www would throw that away.
+      // treats them as two competing sites for every page. www is canonical,
+      // matching the other sites and the sitemap already registered in
+      // Search Console.
       {
         source: "/:path*",
-        has: [{ type: "host", value: "www.ellietattooer.com" }],
-        destination: "https://ellietattooer.com/:path*",
+        has: [{ type: "host", value: "ellietattooer.com" }],
+        destination: "https://www.ellietattooer.com/:path*",
         permanent: true,
       },
       // Shareable direct links to each homepage section.

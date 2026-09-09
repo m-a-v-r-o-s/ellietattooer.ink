@@ -7,7 +7,7 @@
 // shared import creating a false impression the two call sites must change
 // together.
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://ellietattooer.com"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.ellietattooer.com"
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "Ellie Tattooer";

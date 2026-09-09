@@ -25,7 +25,8 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   // Resolved per route against metadataBase, and inherited by the legal pages
   // that define their own metadata. Apex and www both answer, so without this
-  // the site competes with itself for every page.
+  // the site competes with itself for every page. www is the canonical host,
+  // matching the other sites and the sitemap registered in Search Console.
   alternates: { canonical: "./" },
   openGraph: {
     title: "★ ELLIE TATTOOER ★",
