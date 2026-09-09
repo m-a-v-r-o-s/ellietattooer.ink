@@ -36,6 +36,16 @@ const CSP = [
 const nextConfig: NextConfig = {
   async redirects() {
     return [
+      // Apex and www both resolve to this app. Without a redirect Google
+      // treats them as two competing sites for every page. The apex is
+      // canonical: it is what lib/site.ts emits and what Google has already
+      // indexed, so consolidating onto www would throw that away.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.ellietattooer.com" }],
+        destination: "https://ellietattooer.com/:path*",
+        permanent: true,
+      },
       // Shareable direct links to each homepage section.
       { source: "/shop", destination: "/#shop", permanent: false },
       { source: "/gallery", destination: "/#portfolio", permanent: false },
