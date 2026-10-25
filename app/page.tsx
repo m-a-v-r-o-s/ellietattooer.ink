@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useMotionValue } from "motion/react";
+import Lightbox from "./Lightbox";
+import { project, rubberband } from "@/lib/spring";
+import { settle, useDrag } from "@/lib/gestures";
 import {
   SHIPPING_ZONES,
   INTERNATIONAL_DM_URL,
@@ -423,6 +427,50 @@ export default function EllieTattooer() {
     setClientSecret(null);
   };
 
+  // Cart drawer: x is a motion value. Swipe right to close (1:1, rubber band when
+  // pulled open further, momentum decides), catchable mid-animation.
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const drawerX = useMotionValue(420);
+  const drawerStart = useRef(0);
+  const releaseV = useRef(0);
+  const drawerW = () => (drawerRef.current?.offsetWidth ?? 380) + 4;
+  const park = (parked: boolean) => {
+    if (drawerRef.current) drawerRef.current.inert = parked;
+  };
+  useEffect(() => {
+    const v = releaseV.current;
+    releaseV.current = 0;
+    if (cartOpen) {
+      park(false);
+      settle(drawerX, 0, v, v ? 0.3 : 0);
+    } else {
+      settle(drawerX, drawerW(), v, v ? 0.15 : 0, () => park(true));
+    }
+  }, [cartOpen, drawerX]);
+  const drawerDrag = useDrag({
+    instant: () => (drawerX.isAnimating() ? "x" : null),
+    onDown: (e) => {
+      if ((e.target as HTMLElement).closest("input, textarea, select")) return false;
+      drawerX.stop();
+      drawerStart.current = drawerX.get();
+    },
+    onLock: (axis) => axis === "x",
+    onMove: (_a, dx) => {
+      const nx = drawerStart.current + dx;
+      drawerX.set(nx < 0 ? rubberband(nx, drawerW()) : nx);
+    },
+    onEnd: (_a, _dx, _dy, vx) => {
+      const wantOpen = drawerX.get() + project(vx) < drawerW() / 2;
+      if (wantOpen === cartOpen) {
+        settle(drawerX, wantOpen ? 0 : drawerW(), vx, wantOpen ? 0.3 : 0.15);
+      } else {
+        releaseV.current = vx;
+        if (wantOpen) setCartOpen(true);
+        else closeCart();
+      }
+    },
+  });
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -538,6 +586,13 @@ export default function EllieTattooer() {
           background: rgba(0,0,0,0.85); z-index: 2000;
           padding: 24px;
         }
+        .lightbox-nav {
+          position: fixed; top: 50%; z-index: 2001; width: 44px; height: 44px; margin-top: -22px;
+          background: rgba(0,0,0,0.4); border: 2px solid #fff; color: #fff; font-size: 26px; line-height: 1;
+          cursor: pointer; font-family: var(--font-oswald), sans-serif;
+        }
+        .lightbox-prev { left: calc(12px + env(safe-area-inset-left, 0px)); }
+        .lightbox-next { right: calc(12px + env(safe-area-inset-right, 0px)); }
         .lightbox-img {
           max-width: 96%; max-height: 92%; object-fit: contain; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
         }
@@ -843,12 +898,12 @@ export default function EllieTattooer() {
           background: #fff;
           border-left: 2px solid #111;
           z-index: 1000;
-          transform: translateX(100%);
-          transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+          /* x is driven by a motion value (swipe to close, catchable mid-flight). */
+          touch-action: pan-y;
+          overscroll-behavior: contain;
           display: flex;
           flex-direction: column;
         }
-        .cart-drawer.open { transform: translateX(0); }
 
         .cart-overlay {
           position: fixed; inset: 0;
@@ -1494,28 +1549,12 @@ export default function EllieTattooer() {
           )}
         </div>
         {lightboxIndex !== null && (
-          <div
-            className="lightbox-overlay"
-            onClick={() => setLightboxIndex(null)}
-            role="dialog"
-            aria-modal="true"
-          >
-            <button
-              className="lightbox-close"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxIndex(null);
-              }}
-            >
-              Close
-            </button>
-            <img
-              src={`/portfolio/${PORTFOLIO_IMAGES[lightboxIndex].file}`}
-              alt={PORTFOLIO_IMAGES[lightboxIndex].alt}
-              className="lightbox-img"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          <Lightbox
+            images={PORTFOLIO_IMAGES}
+            index={lightboxIndex}
+            onIndex={setLightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
         )}
       </section>
 
@@ -2156,7 +2195,12 @@ export default function EllieTattooer() {
       />
 
       {/* CART DRAWER */}
-      <div className={`cart-drawer ${cartOpen ? "open" : ""}`}>
+      <motion.div
+        className="cart-drawer"
+        style={{ x: drawerX }}
+        ref={drawerRef}
+        {...drawerDrag.handlers}
+      >
         <div
           style={{
             height: 74,
@@ -2644,7 +2688,7 @@ export default function EllieTattooer() {
           </div>
         )}
         </div>
-      </div>
+      </motion.div>
 
       {/* COOKIE CONSENT */}
       {cookieBannerOpen && (
