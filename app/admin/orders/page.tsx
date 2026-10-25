@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getStripe, listOrders, type Order } from "@/lib/stripe";
 import { getProduct, SHIPPING_ZONES } from "@/lib/shop";
+import { zoneFromPostalCode } from "@/lib/postal-zones";
 
 // Internal ops page: gated by middleware.ts (Basic Auth), never linked from
 // the storefront, and excluded from indexing here as a second layer.
@@ -40,6 +41,26 @@ function itemsLabel(items: Order["items"]) {
 function zoneLabel(zoneId: string | null) {
   if (!zoneId) return null;
   return SHIPPING_ZONES.find((z) => z.id === zoneId)?.label ?? zoneId;
+}
+
+/**
+ * The zone charged at checkout comes from a postal code the buyer typed on
+ * our site, before Stripe collects their real shipping address. Nothing
+ * stops those from disagreeing (an Athens code entered to get cheap
+ * shipping, a real address in Crete). Flag it here whenever the real
+ * address resolves to a pricier zone than what was actually charged.
+ */
+function shippingShortfall(order: Order) {
+  const code = order.address?.postal_code;
+  if (!order.zone || !code) return null;
+
+  const real = zoneFromPostalCode(code);
+  if (!real || real === "international" || real.id === order.zone) return null;
+
+  const charged = SHIPPING_ZONES.find((z) => z.id === order.zone);
+  if (!charged || real.amount <= charged.amount) return null;
+
+  return { real, charged };
 }
 
 export default async function OrdersPage({
@@ -86,31 +107,41 @@ export default async function OrdersPage({
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} style={{ borderBottom: "1px solid #ddd", verticalAlign: "top" }}>
-                  <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{formatDate(order.created)}</td>
-                  <td style={{ padding: "10px 12px" }}>
-                    <div>{order.name ?? "—"}</div>
-                    <div style={{ color: "#666" }}>{order.email ?? "—"}</div>
-                    {order.phone && <div style={{ color: "#666" }}>{order.phone}</div>}
-                  </td>
-                  <td style={{ padding: "10px 12px" }}>{itemsLabel(order.items) || "—"}</td>
-                  <td style={{ padding: "10px 12px" }}>
-                    {order.address ? (
-                      <>
-                        <div>{[order.address.line1, order.address.line2].filter(Boolean).join(", ")}</div>
-                        <div>{[order.address.postal_code, order.address.city].filter(Boolean).join(" ")}</div>
-                        {zoneLabel(order.zone) && <div style={{ color: "#666" }}>{zoneLabel(order.zone)}</div>}
-                      </>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
-                    {formatMoney(order.amountTotal, order.currency)}
-                  </td>
-                </tr>
-              ))}
+              {orders.map((order) => {
+                const shortfall = shippingShortfall(order);
+                return (
+                  <tr key={order.id} style={{ borderBottom: "1px solid #ddd", verticalAlign: "top" }}>
+                    <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{formatDate(order.created)}</td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <div>{order.name ?? "—"}</div>
+                      <div style={{ color: "#666" }}>{order.email ?? "—"}</div>
+                      {order.phone && <div style={{ color: "#666" }}>{order.phone}</div>}
+                    </td>
+                    <td style={{ padding: "10px 12px" }}>{itemsLabel(order.items) || "—"}</td>
+                    <td style={{ padding: "10px 12px" }}>
+                      {order.address ? (
+                        <>
+                          <div>{[order.address.line1, order.address.line2].filter(Boolean).join(", ")}</div>
+                          <div>{[order.address.postal_code, order.address.city].filter(Boolean).join(" ")}</div>
+                          {zoneLabel(order.zone) && <div style={{ color: "#666" }}>{zoneLabel(order.zone)}</div>}
+                          {shortfall && (
+                            <div style={{ color: "#b91c1c", fontWeight: 600, marginTop: 4 }}>
+                              Shipping underpaid: postal code is {shortfall.real.label} (
+                              {formatMoney(shortfall.real.amount, order.currency)}), charged{" "}
+                              {shortfall.charged.label} ({formatMoney(shortfall.charged.amount, order.currency)})
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
+                      {formatMoney(order.amountTotal, order.currency)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

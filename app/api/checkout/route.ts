@@ -1,4 +1,9 @@
-import { getStripe, getSoldCountCached } from "@/lib/stripe";
+import {
+  getStripe,
+  getSoldCountCached,
+  getSoldCountsBySizeCached,
+  shippingOptionFor,
+} from "@/lib/stripe";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import {
   PRODUCTS,
@@ -64,6 +69,8 @@ export async function POST(request: Request) {
   }
 
   // We only ship within Greece. Anything else must go through Instagram DM.
+  // This zone only prices the session until the buyer's real address arrives
+  // through /api/checkout/shipping, which re-prices it from that address.
   const zone = SHIPPING_ZONES.find((z) => z.id === body.zone);
   if (!zone) {
     return Response.json(
@@ -140,6 +147,34 @@ export async function POST(request: Request) {
     if (scarceLine.qty > remaining) scarceLine.qty = remaining;
   }
 
+  // Authoritative per-size stock check for any product with size-scoped
+  // stock limits (Stripe is the source of truth for units already sold).
+  for (const line of lines) {
+    if (!line.product.sizeStock) continue;
+    const key = line.size ?? "";
+    const limit = line.product.sizeStock[key] ?? 0;
+
+    let soldBySize: Record<string, number>;
+    try {
+      soldBySize = await getSoldCountsBySizeCached(stripe, line.product.id, CHECKOUT_MAX_AGE_MS);
+    } catch (err) {
+      console.error("checkout: getSoldCountsBySize failed", err);
+      return Response.json(
+        { error: "Couldn’t verify availability. Please try again." },
+        { status: 503 },
+      );
+    }
+
+    const remaining = Math.max(0, limit - (soldBySize[key] ?? 0));
+    if (remaining <= 0) {
+      return Response.json(
+        { error: `${line.product.name} (${line.size}) is sold out.`, soldOut: true },
+        { status: 409 },
+      );
+    }
+    if (line.qty > remaining) line.qty = remaining;
+  }
+
   const currency = "eur";
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map((line) => {
     const imageUrl = `${SITE_URL}${line.product.image}`;
@@ -165,30 +200,23 @@ export async function POST(request: Request) {
   );
 
   const session = await stripe.checkout.sessions.create({
+    ui_mode: "elements",
     mode: "payment",
     line_items,
     phone_number_collection: { enabled: true },
     shipping_address_collection: { allowed_countries: ["GR"] },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          display_name: zone.label,
-          fixed_amount: { amount: zone.amount, currency },
-          delivery_estimate: {
-            minimum: { unit: "business_day", value: zone.estimate.min },
-            maximum: { unit: "business_day", value: zone.estimate.max },
-          },
-        },
-      },
-    ],
+    // The browser can't set the shipping address; only our server can, and it
+    // re-prices shipping from that address in the same update. Without this a
+    // buyer could pay the Athens rate and ship to Crete. Stripe also disables
+    // Apple Pay / Google Pay here, since wallets set the address themselves.
+    permissions: { update_shipping_details: "server_only" },
+    shipping_options: [shippingOptionFor(zone)],
     payment_intent_data: {
       metadata: { items: itemsMetadata, zone: zone.id },
     },
     metadata: { items: itemsMetadata, zone: zone.id },
-    success_url: `${SITE_URL}/?checkout=success`,
-    cancel_url: `${SITE_URL}/?checkout=cancel`,
+    return_url: `${SITE_URL}/?session_id={CHECKOUT_SESSION_ID}`,
   });
 
-  return Response.json({ url: session.url });
+  return Response.json({ clientSecret: session.client_secret });
 }

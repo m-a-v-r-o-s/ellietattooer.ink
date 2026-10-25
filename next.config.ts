@@ -19,14 +19,20 @@ import type { NextConfig } from "next";
 //
 // frame-src allows the studio-info Google Maps embed; without it default-src
 // 'self' blocks the iframe outright and it silently renders blank.
+//
+// The js.stripe.com / api.stripe.com / hooks.stripe.com / *.stripe.com
+// entries are for Stripe's Elements-based checkout (app/CheckoutPanel.tsx):
+// Stripe.js itself, the Address/Payment Elements' XHR calls, the iframes
+// card fields and 3D Secure challenges render in, and the card-network/wallet
+// icons the Payment Element loads from Stripe's CDN.
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://js.stripe.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://ritualtattoo.gr",
+  "img-src 'self' data: https://ritualtattoo.gr https://*.stripe.com",
   "font-src 'self'",
-  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com",
-  "frame-src https://www.google.com",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.stripe.com",
+  "frame-src https://www.google.com https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",
@@ -34,6 +40,12 @@ const CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Railway holds the publishable key as STRIPE_PUBLISHABLE_KEY, but the
+  // browser only sees NEXT_PUBLIC_* values, inlined at build time.
+  env: {
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? process.env.STRIPE_PUBLISHABLE_KEY ?? "",
+  },
   async redirects() {
     return [
       // Apex and www both resolve to this app. Without a redirect Google
@@ -65,7 +77,9 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=()",
+            // payment=() would block the Payment Request API entirely, which
+            // hides Apple Pay / Google Pay inside Stripe's Payment Element.
+            value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://js.stripe.com")',
           },
           // Two years, subdomains included. No `preload` — that ships the
           // domain to a browser-baked list that is slow and painful to undo.

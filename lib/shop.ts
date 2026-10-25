@@ -16,6 +16,9 @@ export type ShopProduct = {
   maxPerOrder: number;
   // Present only for stock-limited products; absent = unlimited.
   totalStock?: number;
+  // Present only for products with per-size stock limits, keyed by the
+  // values in `sizes`. Overrides totalStock semantics on a per-size basis.
+  sizeStock?: Record<string, number>;
 };
 
 const VAT_RATE = 0.24;
@@ -36,8 +39,10 @@ export const PRODUCTS: ShopProduct[] = [
     amount: 3500, // €35.00, VAT included
     currency: "eur",
     image: "/portfolio/Oversized-tee2.webp",
-    sizes: ["S", "M", "L", "XL"],
+    // Only L is left in stock; the other sizes are hidden until restocked.
+    sizes: ["L"],
     maxPerOrder: 10,
+    sizeStock: { L: 14 },
   },
 ];
 

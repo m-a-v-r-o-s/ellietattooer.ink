@@ -4,7 +4,7 @@ The shop sells two products, both prices tax-inclusive, via **Stripe
 Checkout**, hosted on **Railway**:
 
 - **Backpiece Print 50×70cm** — €70, single size.
-- **Oversized T-Shirt** — €35, sizes XS/S/M/L/XL.
+- **Oversized T-Shirt** — €35, only size L for now (14 in stock, `sizeStock` in `lib/shop.ts`).
 
 Product config (price, sizes, stock) lives in `lib/shop.ts`.
 
@@ -23,8 +23,15 @@ Product config (price, sizes, stock) lives in `lib/shop.ts`.
   server-side from `lib/shop.ts`, never from what the client sends.
 - **Shipping:** Greece only, 5 zones (`lib/shop.ts`), prices include 24% VAT.
   Choosing **Outside Greece** hides checkout and shows a "DM on Instagram" link.
-- **After payment:** customer returns to `/?checkout=success`, the cart clears
-  and a confirmation banner shows. Cancels return to `/?checkout=cancel`.
+- **Checkout:** happens in-page (Stripe's Address + Payment Elements, inside
+  the cart drawer) rather than a redirect to a separate Stripe-hosted page.
+  The buyer's address only reaches Stripe through `/api/checkout/shipping`,
+  which re-prices shipping from that address's postal code, so the fee always
+  matches where it ships (an Athens code on the site plus a Crete address in
+  checkout pays Crete). Stripe disables Apple Pay / Google Pay in this mode.
+  After payment, Stripe returns the buyer to `/?session_id=...`, the site
+  looks up that session's status, clears the cart and shows a confirmation
+  banner on success (or a cancel banner otherwise).
 
 ## Go live (once you have a Stripe account)
 
@@ -33,20 +40,26 @@ Product config (price, sizes, stock) lives in `lib/shop.ts`.
    (use **Test mode** first — key starts with `sk_test_`).
 3. In **Railway → your service → Variables**, add:
    - `STRIPE_SECRET_KEY = sk_test_...`
+   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_test_...` — same dashboard page,
+     the paired publishable key. Loads Stripe.js for the in-page checkout;
+     safe to expose client-side (that's what it's for).
    - `NEXT_PUBLIC_SITE_URL = https://ellietattooer.com` — set this. It controls
      where buyers land after paying, and it is deliberately not read from the
      request headers (those are forgeable).
 4. Redeploy. Done — the shop is live.
 
 When ready for real sales, switch Stripe to **Live mode**, copy the
-`sk_live_...` key, and replace `STRIPE_SECRET_KEY` on Railway.
+`sk_live_...`/`pk_live_...` key pair, and replace both on Railway.
 
 ## Test it (Test mode)
 
-Buy the print and at Stripe's page use card **4242 4242 4242 4242**, any future
-expiry, any CVC, any Greek address. After paying you'll land back on the site
-with the confirmation banner. Make 3 test purchases and the card shows SOLD OUT
-(allow up to a minute for the badge to catch up — the count is cached).
+Buy the print, fill in the postal code, and on the in-page payment step enter
+an email, any Greek address and a phone number, press **Use this address**
+(the shipping line updates to that address's zone), then pay with card
+**4242 4242 4242 4242**, any future expiry, any CVC.
+After paying you'll land back on the site with the confirmation banner. Make
+3 test purchases and the card shows SOLD OUT (allow up to a minute for the
+badge to catch up — the count is cached).
 
 ## Orders & notifications
 

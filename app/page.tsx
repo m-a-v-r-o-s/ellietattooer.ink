@@ -11,6 +11,7 @@ import {
   getProduct,
 } from "@/lib/shop";
 import { zoneFromPostalCode } from "@/lib/postal-zones";
+import CheckoutPanel from "./CheckoutPanel";
 
 const STUDIO_LOGO =
   "https://ritualtattoo.gr/wp-content/uploads/2018/05/ritual_logo_banner_dark_150.png";
@@ -221,6 +222,11 @@ export default function EllieTattooer() {
   const [shipZone, setShipZone] = useState("");
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
+  // Set once /api/checkout returns a Stripe Elements client secret — swaps
+  // the "Continue to Payment" button for the in-drawer payment step. Cleared
+  // whenever the cart changes or the drawer closes, since a Checkout Session
+  // is created from a fixed snapshot of the cart and doesn't track edits.
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState<"success" | "cancel" | null>(
     null,
   );
@@ -299,16 +305,26 @@ export default function EllieTattooer() {
     refreshAvailability();
   }, [refreshAvailability]);
 
-  // Handle the return trip from Stripe Checkout (?checkout=success|cancel).
+  // Handle the return trip from Stripe's in-page checkout. Stripe redirects
+  // back with ?session_id=... (from the Checkout Session's return_url) once
+  // the buyer confirms payment; look up what actually happened server-side
+  // rather than trust the redirect alone.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const status = params.get("checkout");
-    if (status === "success" || status === "cancel") {
-      setOrderStatus(status);
-      if (status === "success") {
-        setCart([]);
-        refreshAvailability();
-      }
+    const sessionId = params.get("session_id");
+    if (sessionId) {
+      fetch(`/api/checkout/status?session_id=${encodeURIComponent(sessionId)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const status = data.status === "complete" ? "success" : "cancel";
+          setOrderStatus(status);
+          if (status === "success") {
+            setCart([]);
+            setClientSecret(null);
+            refreshAvailability();
+          }
+        })
+        .catch(() => setOrderStatus("cancel"));
       window.history.replaceState(
         null,
         "",
@@ -321,7 +337,8 @@ export default function EllieTattooer() {
   const cartHasScarceItem = cart.some((i) => i.id === SCARCE_PRODUCT_ID);
 
   // Create a Stripe Checkout session for the current cart + shipping zone,
-  // then hand the customer off to Stripe's hosted payment page.
+  // then render Stripe's in-page payment step (Address + Payment Elements)
+  // with the returned client secret.
   const handleCheckout = useCallback(async () => {
     if (checkingOut || (cartHasScarceItem && soldOut) || cart.length === 0 || !shipZone) return;
     setCheckoutError(null);
@@ -336,7 +353,7 @@ export default function EllieTattooer() {
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.url) {
+      if (!res.ok || !data.clientSecret) {
         if (data.soldOut) {
           setSoldOut(true);
           refreshAvailability();
@@ -345,8 +362,8 @@ export default function EllieTattooer() {
         setCheckingOut(false);
         return;
       }
-      // Success: redirect to Stripe (no need to clear the loading flag).
-      window.location.href = data.url;
+      setClientSecret(data.clientSecret);
+      setCheckingOut(false);
     } catch {
       setCheckoutError("Couldn’t reach checkout. Please try again.");
       setCheckingOut(false);
@@ -357,6 +374,7 @@ export default function EllieTattooer() {
     if (!size) return;
     if (product.id === SCARCE_PRODUCT_ID && soldOut) return;
     const cap = capFor(product.id);
+    setClientSecret(null); // cart changed: any in-progress payment step is stale
     setCart((prev) => {
       const existing = prev.find((i) => i.id === product.id && i.size === size);
       if (existing) {
@@ -380,10 +398,13 @@ export default function EllieTattooer() {
     }
   };
 
-  const removeFromCart = (id: string, size: string) =>
+  const removeFromCart = (id: string, size: string) => {
+    setClientSecret(null); // cart changed: any in-progress payment step is stale
     setCart((prev) => prev.filter((i) => !(i.id === id && i.size === size)));
+  };
 
-  const updateQty = (id: string, size: string, delta: number) =>
+  const updateQty = (id: string, size: string, delta: number) => {
+    setClientSecret(null); // cart changed: any in-progress payment step is stale
     setCart((prev) =>
       prev.flatMap((i) => {
         if (i.id !== id || i.size !== size) return [i];
@@ -393,6 +414,12 @@ export default function EllieTattooer() {
         return [{ ...i, qty: next }];
       }),
     );
+  };
+
+  const closeCart = () => {
+    setCartOpen(false);
+    setClientSecret(null);
+  };
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -2111,7 +2138,7 @@ export default function EllieTattooer() {
       {/* CART OVERLAY */}
       <div
         className={`cart-overlay ${cartOpen ? "open" : ""}`}
-        onClick={() => setCartOpen(false)}
+        onClick={closeCart}
       />
 
       {/* CART DRAWER */}
@@ -2143,7 +2170,7 @@ export default function EllieTattooer() {
             )}
           </h3>
           <button
-            onClick={() => setCartOpen(false)}
+            onClick={closeCart}
             style={{
               background: "none",
               border: "none",
@@ -2165,7 +2192,8 @@ export default function EllieTattooer() {
             </svg>
           </button>
         </div>
-        <div style={{ flex: "0 1 auto", minHeight: 0, overflowY: "auto", padding: "24px", background: "#fff" }}>
+        <div style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", background: "#fff" }}>
+        <div style={{ padding: "24px" }}>
           {cart.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px 0" }}>
               <svg
@@ -2288,7 +2316,7 @@ export default function EllieTattooer() {
           )}
         </div>
         {cart.length > 0 && (
-          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff", flexShrink: 0 }}>
+          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff" }}>
             {/* Postal code → auto-detect zone */}
             <label
               htmlFor="postal-code"
@@ -2316,6 +2344,7 @@ export default function EllieTattooer() {
                   const v = e.target.value.replace(/\D/g, "").slice(0, 5);
                   setPostalCode(v);
                   setCheckoutError(null);
+                  setClientSecret(null); // zone may change: any payment step is stale
                   if (v.length === 5) {
                     const result = zoneFromPostalCode(v);
                     if (result === "international" || result === null) {
@@ -2529,49 +2558,76 @@ export default function EllieTattooer() {
                     €{(cartTotal + shippingCost).toFixed(2)}
                   </span>
                 </div>
-                <button
-                  className="btn-primary"
-                  style={{
-                    width: "100%",
-                    fontSize: 14,
-                    padding: "14px",
-                    opacity: checkingOut ? 0.6 : 1,
-                    cursor: checkingOut ? "wait" : "pointer",
-                  }}
-                  onClick={handleCheckout}
-                  disabled={checkingOut}
-                >
-                  {checkingOut ? "Redirecting to Stripe…" : "Proceed to Checkout"}
-                </button>
-                {checkoutError && (
-                  <p
-                    style={{
-                      fontFamily: "var(--font-oswald), sans-serif",
-                      fontSize: 14,
-                      color: "#111",
-                      textAlign: "center",
-                      marginTop: 8,
-                    }}
-                  >
-                    {checkoutError}
-                  </p>
+                {clientSecret ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setClientSecret(null)}
+                      style={{
+                        display: "block",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontFamily: "var(--font-oswald), sans-serif",
+                        fontSize: 13,
+                        color: "#666",
+                        padding: 0,
+                        marginBottom: 12,
+                        textDecoration: "underline",
+                      }}
+                    >
+                      ‹ Back to cart details
+                    </button>
+                    <CheckoutPanel clientSecret={clientSecret} />
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="btn-primary"
+                      style={{
+                        width: "100%",
+                        fontSize: 14,
+                        padding: "14px",
+                        opacity: checkingOut ? 0.6 : 1,
+                        cursor: checkingOut ? "wait" : "pointer",
+                      }}
+                      onClick={handleCheckout}
+                      disabled={checkingOut}
+                    >
+                      {checkingOut ? "Loading payment…" : "Continue to Payment"}
+                    </button>
+                    {checkoutError && (
+                      <p
+                        style={{
+                          fontFamily: "var(--font-oswald), sans-serif",
+                          fontSize: 14,
+                          color: "#111",
+                          textAlign: "center",
+                          marginTop: 8,
+                        }}
+                      >
+                        {checkoutError}
+                      </p>
+                    )}
+                    <p
+                      style={{
+                        fontFamily: "var(--font-oswald), sans-serif",
+                        fontStyle: "italic",
+                        fontSize: 13,
+                        color: "#aaa",
+                        textAlign: "center",
+                        marginTop: 10,
+                      }}
+                    >
+                      Secure checkout via Stripe
+                    </p>
+                  </>
                 )}
-                <p
-                  style={{
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontStyle: "italic",
-                    fontSize: 13,
-                    color: "#aaa",
-                    textAlign: "center",
-                    marginTop: 10,
-                  }}
-                >
-                  Secure checkout via Stripe
-                </p>
               </>
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* COOKIE CONSENT */}
