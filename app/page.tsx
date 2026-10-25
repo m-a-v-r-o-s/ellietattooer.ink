@@ -719,7 +719,11 @@ export default function EllieTattooer() {
           box-shadow: 6px 6px 0 #111;
           padding: 22px 22px 20px;
           font-family: var(--font-oswald), sans-serif;
-          animation: cookieUp 0.4s ease forwards;
+          animation: cookieUp var(--spring-smooth-ms) var(--spring-smooth) forwards;
+        }
+        @keyframes menuIn {
+          from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+          to { opacity: 1; transform: none; }
         }
         @keyframes cookieUp {
           from { opacity: 0; transform: translateY(20px); }
@@ -964,10 +968,16 @@ export default function EllieTattooer() {
                stacking context, so this must beat 100 (not just the logo's
                inner z-index) to render above the bled-through logo below. */
             z-index: 101;
+            transform-origin: top center;
+            animation: menuIn var(--spring-smooth-ms) var(--spring-smooth) both;
           }
           /* Oversized brand logo intentionally bleeds past the 72px navbar,
              same as desktop, just at a smaller scale. */
           .nav-logo-img { height: 280px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes cookieUp { from { opacity: 0; } to { opacity: 1; } }
         }
       `}</style>
 
@@ -1108,9 +1118,9 @@ export default function EllieTattooer() {
             style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexDirection: "column", gap: 5 }}
             title="Menu"
           >
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 0.2s" }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform 0.2s", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform var(--spring-snappy-ms) var(--spring-snappy)", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 160ms var(--ease-out)" }} />
+            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform var(--spring-snappy-ms) var(--spring-snappy)", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
           </button>
 
           {/* MOBILE RIGHT: cart */}
