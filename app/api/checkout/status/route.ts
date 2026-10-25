@@ -25,8 +25,8 @@ export async function GET(request: Request) {
   }
 
   const sessionId = new URL(request.url).searchParams.get("session_id");
-  if (!sessionId) {
-    return Response.json({ error: "Missing session_id." }, { status: 400 });
+  if (!sessionId || !/^cs_(test|live)_[A-Za-z0-9]{1,200}$/.test(sessionId)) {
+    return Response.json({ error: "Missing or invalid session_id." }, { status: 400 });
   }
 
   const stripe = getStripe();

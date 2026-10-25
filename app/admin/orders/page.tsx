@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { checkAdminAuth } from "@/lib/admin-auth";
 import { getStripe, listOrders, type Order } from "@/lib/stripe";
 import { getProduct, SHIPPING_ZONES } from "@/lib/shop";
 import { zoneFromPostalCode } from "@/lib/postal-zones";
 
-// Internal ops page: gated by middleware.ts (Basic Auth), never linked from
+// Internal ops page: gated by proxy.ts (Basic Auth) and re-checked in the page itself, never linked from
 // the storefront, and excluded from indexing here as a second layer.
 export const metadata: Metadata = {
   title: "Orders",
@@ -68,6 +71,10 @@ export default async function OrdersPage({
 }: {
   searchParams: Promise<{ after?: string }>;
 }) {
+  // Second check: the proxy alone must never be the only gate. A page cannot
+  // send a 401 challenge, so a missed proxy gets a plain 404 instead.
+  if (!checkAdminAuth(await headers()).ok) notFound();
+
   const { after } = await searchParams;
   const stripe = getStripe();
 
