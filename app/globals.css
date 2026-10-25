@@ -1,5 +1,45 @@
 @import "tailwindcss";
 
+/* Akos DS mobile feel: drop-in tokens + platform baseline. Generated springs from spring.js
+   (node spring.js --css). Duration tokens are settle times; the motion reads as ~500ms. */
+:root {
+  --spring-smooth: linear(0, 0.017, 0.06, 0.119, 0.187, 0.258, 0.33, 0.4, 0.467, 0.528, 0.585, 0.637, 0.683, 0.724, 0.761, 0.794, 0.822, 0.847, 0.868, 0.887, 0.904, 0.918, 0.93, 0.94, 0.949, 0.957, 0.963, 0.969, 0.974, 0.978, 0.981, 0.984, 0.987, 0.989, 0.99, 0.992, 0.993, 0.994, 0.995, 0.996, 0.997, 0.997, 0.998, 0.998, 0.998, 0.999, 0.999, 1);
+  --spring-smooth-ms: 736ms;
+  --spring-snappy: linear(0, 0.017, 0.062, 0.124, 0.198, 0.277, 0.357, 0.435, 0.51, 0.58, 0.643, 0.7, 0.751, 0.795, 0.834, 0.867, 0.895, 0.919, 0.938, 0.954, 0.967, 0.977, 0.985, 0.992, 0.997, 1, 1.003, 1.004, 1.005, 1.006, 1.006, 1.006, 1.006, 1.006, 1.005, 1.005, 1.004, 1.004, 1.003, 1.003, 1.002, 1.002, 1.002, 1.001, 1.001, 1);
+  --spring-snappy-ms: 704ms;
+  --spring-bouncy: linear(0, 0.018, 0.064, 0.132, 0.212, 0.3, 0.39, 0.479, 0.564, 0.644, 0.716, 0.781, 0.837, 0.885, 0.926, 0.959, 0.986, 1.007, 1.022, 1.033, 1.04, 1.044, 1.046, 1.046, 1.044, 1.041, 1.037, 1.033, 1.029, 1.025, 1.021, 1.017, 1.014, 1.011, 1.008, 1.006, 1.004, 1.002, 1.001, 1, 0.999, 0.999, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.999, 0.999, 0.999, 1);
+  --spring-bouncy-ms: 832ms;
+  --press-ms: 120ms;
+  --press-scale: 0.97;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* linear() is Safari 17.2+, Chrome 113+, Firefox 112+. Older engines get a close cubic-bezier. */
+@supports not (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+    --spring-snappy: cubic-bezier(0.2, 0.9, 0.3, 1);
+    --spring-bouncy: cubic-bezier(0.34, 1.36, 0.64, 1);
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  /* No overscroll-behavior here: keep the native page bounce. Use contain on inner scrollers. */
+}
+a, button, [role="button"], label, summary { touch-action: manipulation; }
+button, [role="button"], summary { -webkit-user-select: none; user-select: none; }
+@media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em); } }
+
+/* Press feedback on touch-down, every input type. Add .press to tappables that lack their own. */
+.press { transition: transform var(--press-ms) var(--ease-out); }
+.press:active { transform: scale(var(--press-scale)); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --spring-smooth: ease; --spring-snappy: ease; --spring-bouncy: ease; --press-scale: 1; }
+}
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -22,4 +62,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-oswald), Arial, Helvetica, sans-serif;
+}
+
+/* Press states on every tappable (touch-down, all input types). */
+button:not(:disabled), [role="button"], .nav-link, .portfolio-item, .product-card, .size-btn {
+  transition-property: transform, background-color, color, border-color, box-shadow, opacity;
+}
+button:not(:disabled):active, .nav-link:active, .portfolio-item:active, .size-btn:active {
+  transform: scale(var(--press-scale));
 }

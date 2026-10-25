@@ -475,8 +475,8 @@ export default function EllieTattooer() {
           background: #FFB3C1;
           transition: width 0.2s;
         }
-        .nav-link:hover::after { width: 100%; }
-        .nav-link:hover { color: #FFB3C1; }
+        @media (hover: hover) and (pointer: fine) { .nav-link:hover::after { width: 100%; } }
+        @media (hover: hover) and (pointer: fine) { .nav-link:hover { color: #FFB3C1; } }
 
         @keyframes shake {
           0%,100% { transform: translateX(0); }
@@ -517,9 +517,9 @@ export default function EllieTattooer() {
           overflow: hidden;
           cursor: pointer;
         }
-        .portfolio-item:hover .portfolio-overlay {
+        @media (hover: hover) and (pointer: fine) { .portfolio-item:hover .portfolio-overlay {
           opacity: 1;
-        }
+        } }
         .portfolio-overlay {
           position: absolute; inset: 0;
           background: rgba(255,179,193,0.85);
@@ -542,7 +542,7 @@ export default function EllieTattooer() {
           max-width: 96%; max-height: 92%; object-fit: contain; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
         }
         .lightbox-close {
-          position: fixed; top: 20px; right: 20px; background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: var(--font-oswald), sans-serif; z-index: 2001;
+          position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: var(--font-oswald), sans-serif; z-index: 2001;
         }
         .portfolio-placeholder {
           width: 100%; height: 100%;
@@ -561,10 +561,10 @@ export default function EllieTattooer() {
           border: 2px solid #111;
           transition: transform 0.2s, box-shadow 0.2s;
         }
-        .product-card:hover {
+        @media (hover: hover) and (pointer: fine) { .product-card:hover {
           transform: translateY(-4px);
           box-shadow: 6px 6px 0 #111;
-        }
+        } }
         .product-media {
           position: relative;
           aspect-ratio: 3 / 4;
@@ -575,7 +575,7 @@ export default function EllieTattooer() {
           opacity: 0;
           transition: opacity 0.45s ease;
         }
-        .product-card:hover .product-img-alt { opacity: 1; }
+        @media (hover: hover) and (pointer: fine) { .product-card:hover .product-img-alt { opacity: 1; } }
         .product-media-placeholder {
           position: absolute;
           inset: 0;
@@ -606,10 +606,10 @@ export default function EllieTattooer() {
           cursor: pointer;
           transition: background 0.2s, color 0.2s;
         }
-        .btn-primary:hover {
+        @media (hover: hover) and (pointer: fine) { .btn-primary:hover {
           background: #FFB3C1;
           border-color: #040404;
-        }
+        } }
 
         .btn-outline {
           background: transparent;
@@ -624,10 +624,10 @@ export default function EllieTattooer() {
           cursor: pointer;
           transition: background 0.2s, color 0.2s;
         }
-        .btn-outline:hover {
+        @media (hover: hover) and (pointer: fine) { .btn-outline:hover {
           background: #111;
           color: #fff;
-        }
+        } }
 
         .btn-mint {
           background: #92c8b7;
@@ -642,11 +642,11 @@ export default function EllieTattooer() {
           cursor: pointer;
           transition: background 0.2s, color 0.2s, border-color 0.2s;
         }
-        .btn-mint:hover {
+        @media (hover: hover) and (pointer: fine) { .btn-mint:hover {
           background: #111;
           color: #fff;
           border-color: #111;
-        }
+        } }
 
         .size-btn {
           border: 1.5px solid #aaa;
@@ -663,9 +663,9 @@ export default function EllieTattooer() {
           color: #fff;
           border-color: #111;
         }
-        .size-btn:hover:not(.active) {
+        @media (hover: hover) and (pointer: fine) { .size-btn:hover:not(.active) {
           border-color: #111;
-        }
+        } }
 
         .section-title {
           font-family: var(--font-oswald), sans-serif;
@@ -689,7 +689,7 @@ export default function EllieTattooer() {
           letter-spacing: 0.1em;
           text-transform: uppercase;
         }
-        .ig-link:hover { color: #FFB3C1; }
+        @media (hover: hover) and (pointer: fine) { .ig-link:hover { color: #FFB3C1; } }
 
         .credit-link {
           color: inherit;
@@ -697,7 +697,7 @@ export default function EllieTattooer() {
           text-underline-offset: 2px;
           transition: color 0.2s;
         }
-        .credit-link:hover { color: #FFB3C1; }
+        @media (hover: hover) and (pointer: fine) { .credit-link:hover { color: #FFB3C1; } }
 
         .ig-avatar {
           width: 36px; height: 36px;
@@ -710,7 +710,7 @@ export default function EllieTattooer() {
         .cookie-card {
           position: fixed;
           left: 20px;
-          bottom: 20px;
+          bottom: calc(20px + env(safe-area-inset-bottom, 0px));
           z-index: 3000;
           width: min(420px, calc(100vw - 40px));
           background: #fff;
@@ -776,7 +776,7 @@ export default function EllieTattooer() {
           text-underline-offset: 3px;
           transition: color 0.2s;
         }
-        .cookie-link:hover { color: #FFB3C1; }
+        @media (hover: hover) and (pointer: fine) { .cookie-link:hover { color: #FFB3C1; } }
         .cookie-row {
           border-top: 2px solid #111;
           padding: 14px 0;
@@ -834,6 +834,8 @@ export default function EllieTattooer() {
           top: 0; right: 0;
           width: min(380px, 100vw);
           height: 100vh;
+          height: 100dvh;
+          padding-bottom: env(safe-area-inset-bottom, 0px);
           background: #fff;
           border-left: 2px solid #111;
           z-index: 1000;
@@ -980,7 +982,7 @@ export default function EllieTattooer() {
             zIndex: 3000,
             background: orderStatus === "success" ? "#92c8b7" : "#fff7f7",
             borderBottom: "2px solid #111",
-            padding: "14px 48px 14px 24px",
+            padding: "calc(14px + env(safe-area-inset-top, 0px)) 48px 14px 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2339,6 +2341,8 @@ export default function EllieTattooer() {
                 id="postal-code"
                 type="text"
                 inputMode="numeric"
+                autoComplete="postal-code"
+                enterKeyHint="done"
                 maxLength={5}
                 placeholder="e.g. 10431"
                 value={postalCode}

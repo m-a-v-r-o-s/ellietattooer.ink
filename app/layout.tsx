@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Oswald } from "next/font/google";
 import Script from "next/script";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
@@ -10,6 +10,18 @@ const oswald = Oswald({
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
+
+// Header is #fff7f7 in both schemes (the site has no dark theme).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fff7f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#fff7f7" },
+  ],
+  colorScheme: "light",
+};
 
 const DESCRIPTION =
   "American Traditional tattoo artist working out of Ritual Tattoo Athens, Fokionos 11 & Ermou. Τατουάζ στην Αθήνα. Browse the gallery, shop signed prints, and get in touch to book a session.";
