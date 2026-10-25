@@ -215,7 +215,6 @@ export default function EllieTattooer() {
   // Scoped to the one stock-limited product (the print) — everything else
   // sells unlimited, so it doesn't need an availability round trip.
   const [soldOut, setSoldOut] = useState(false);
-  const [remaining, setRemaining] = useState(BACKPIECE.totalStock ?? 0);
   const [scarceMaxPerOrder, setScarceMaxPerOrder] = useState(BACKPIECE.maxPerOrder);
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
   const [postalCode, setPostalCode] = useState("");
@@ -257,6 +256,8 @@ export default function EllieTattooer() {
         const saved = JSON.parse(raw) as { analytics?: boolean };
         applyConsent(!!saved.analytics);
       } else {
+        // localStorage only exists after hydration, so this read has to live in an effect.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCookieBannerOpen(true);
       }
     } catch {
@@ -284,7 +285,6 @@ export default function EllieTattooer() {
       if (!res.ok) return;
       const data = await res.json();
       setSoldOut(!data.available);
-      setRemaining(Math.max(0, Number(data.remaining ?? BACKPIECE.totalStock ?? 0)));
       setScarceMaxPerOrder(Math.max(0, Number(data.maxPerOrder ?? BACKPIECE.maxPerOrder)));
     } catch {
       // keep optimistic defaults if the check fails
@@ -302,6 +302,8 @@ export default function EllieTattooer() {
   );
 
   useEffect(() => {
+    // Sets state only after the fetch resolves, never synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshAvailability();
   }, [refreshAvailability]);
 
