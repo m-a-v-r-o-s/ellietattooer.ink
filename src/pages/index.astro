@@ -1,0 +1,210 @@
+---
+import { Image } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header";
+import HeroStickers, { STICKERS } from "../components/HeroStickers";
+import FlashWall from "../components/FlashWall";
+import Merch from "../components/Merch";
+import CartDrawer from "../components/CartDrawer";
+import CookieConsent from "../components/CookieConsent";
+import { PORTFOLIO_IMAGES } from "../components/portfolio";
+import { PRODUCTS } from "../components/cart";
+import { SHIPPING_ZONES, INTERNATIONAL_DM_URL } from "@/lib/shop";
+import { img, meta } from "../images";
+import "../styles/home.css";
+
+const STUDIO_LOGO =
+  "https://ritualtattoo.gr/wp-content/uploads/2018/05/ritual_logo_banner_dark_150.png";
+const ELLIE_PHOTO = "/Screenshot_2026-05-22_19-59-38.webp";
+
+// Build-time image variants, sized for each spot's `sizes` hint.
+const wall = await Promise.all(
+  PORTFOLIO_IMAGES.map(async (i) => ({ ...i, ...(await img(`/portfolio/${i.file}`, [200, 400, 640])) })),
+);
+const productImages = [...new Set(PRODUCTS.flatMap((p) => p.images))];
+const cards = Object.fromEntries(
+  await Promise.all(productImages.map(async (p) => [p, await img(p, [640, 828, 1080])])),
+);
+const thumbs = Object.fromEntries(
+  await Promise.all(PRODUCTS.map(async (p) => [p.images[0], await img(p.images[0], [144, 256])])),
+);
+const stickers = await Promise.all(STICKERS.map((s) => img(s.src, [160, 320, 480])));
+const headerBetty = await img("/stickers/betty.webp", [32, 64]);
+const cartBetty = await img("/stickers/betty.webp", [128, 256]);
+const ellie = await img(ELLIE_PHOTO, [256, 384, 640, 828]);
+const FILL = "position:absolute;height:100%;width:100%;inset:0;object-fit:cover;color:transparent";
+---
+
+<Base path="/">
+  <div style="font-family: var(--font-oswald), 'Impact', sans-serif; background: #92C8B7; color: #111; overflow-x: hidden;">
+    {/* HEADER */}
+    <Header client:load betty={headerBetty} />
+
+    {/* HERO: pink over white, wordmark on the seam, fills the first screen */}
+    <section class="c-hero">
+      <div class="c-in">
+        <div class="c-logo-wrap">
+          <Image
+            src={meta("/portfolio/elliebanner.webp")}
+            alt="Ellie Tattooer"
+            widths={[640, 750, 828, 1080, 1200, 1800]}
+            sizes="(max-width: 720px) 94vw, 680px"
+            format="webp"
+            quality={75}
+            priority
+            class="c-logo"
+          />
+        </div>
+        <h1 class="c-display">American Traditional Tattooing</h1>
+        <div class="c-ctas">
+          <a class="c-big" href="#portfolio">View gallery</a>
+          <a class="c-big ink" href="#about">Book a tattoo</a>
+          <a class="c-big" href="#shop">Shop</a>
+        </div>
+        <p class="c-hint" aria-hidden="true">↔ drag the stickers</p>
+      </div>
+      <HeroStickers client:idle imgs={stickers} />
+    </section>
+
+    {/* FLASH WALL (gallery) */}
+    <section id="portfolio" class="c-sec">
+      <FlashWall client:visible={{ rootMargin: "400px" }} images={wall} />
+    </section>
+
+    {/* GET TATTOOED (contact & inquiries) */}
+    <section id="about" class="c-sec pink">
+      <div class="c-in">
+        <div class="c-head">
+          <h2 class="c-display">Get tattooed</h2>
+        </div>
+        <div class="c-get">
+          <div class="c-side">
+            <div class="c-bubble">
+              <p>
+                You can reach me via <b>Instagram DM</b> or email to{" "}
+                <a class="mail" href="mailto:elliemavrou@gmail.com"><b>elliemavrou@gmail.com</b></a> Thank you!
+              </p>
+              <div class="c-ctas" style="justify-content: flex-start; margin-top: 16px;">
+                <a class="c-big ink" href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">
+                  DM on Instagram
+                </a>
+              </div>
+            </div>
+            <ol class="c-steps">
+              <li>Send your idea, placement and rough size.</li>
+              <li>Ellie replies with a date and a quote.</li>
+              <li>Come to Ritual Tattoo Athens and get tattooed.</li>
+            </ol>
+          </div>
+          <div class="c-me">
+            <img {...ellie} alt="Ellie Tattooer" sizes="260px" loading="lazy" decoding="async" style={FILL} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* MERCH (shop) */}
+    <section id="shop" class="c-sec">
+      <div class="c-in">
+        <div class="c-head">
+          <div>
+            <h2 class="c-display">Merch</h2>
+            <p>Signed and shipped from Athens.</p>
+          </div>
+        </div>
+        <Merch client:visible={{ rootMargin: "400px" }} imgs={cards} />
+        <p class="c-ship">
+          Shipping by Greek postcode:{" "}
+          {SHIPPING_ZONES.map((z) => `${z.label} €${(z.amount / 100).toFixed(2)}`).join(" · ")}
+          {" · "}International orders:{" "}
+          <a href={INTERNATIONAL_DM_URL} target="_blank" rel="noreferrer">DM @ellie_tattooer</a>
+        </p>
+      </div>
+    </section>
+
+    {/* FIND THE STUDIO (studio info) */}
+    <section id="findme" class="c-sec white">
+      <div class="c-in">
+        <div class="c-head">
+          <h2 class="c-display">Find the studio</h2>
+        </div>
+        <div class="c-find">
+          <div class="c-box">
+            <h3 class="c-display">
+              <img src={STUDIO_LOGO} alt="Ritual Tattoo Athens logo" />
+              Ritual Tattoo Athens
+            </h3>
+            <p>
+              Fokionos 11 &amp; Ermou
+              <br />
+              Athens, 10563, Greece
+              <br />
+              <a href="https://www.instagram.com/ritualtattooathens/" target="_blank" rel="noreferrer">@ritualtattooathens</a>
+            </p>
+          </div>
+          <div class="c-box">
+            <h3 class="c-display">Hours &amp; phone</h3>
+            <p>
+              Mon–Fri: 12:00–21:00
+              <br />
+              Saturday: 12:00–20:00
+              <br />
+              <a href="tel:+302107777230">+30 210 77 77 230</a>
+              <br />
+              <a href="tel:+306978907800">+30 697 89 07 800</a>
+            </p>
+          </div>
+          <div class="c-box map">
+            <iframe
+              src="https://www.google.com/maps?q=Ritual%20Tattoo%20Athens%2C%20Fokionos%2011%20%26%20Ermou%2C%20Athens%2010563%2C%20Greece&output=embed"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Map: Ritual Tattoo Athens, Fokionos 11 & Ermou"></iframe>
+          </div>
+        </div>
+
+        {/* Greek summary of the same details. Most walk-in clients search in
+            Greek, so this is real content for readers, not a crawler block. */}
+        <p class="c-gr" lang="el">
+          Τατουάζ σε στυλ American Traditional στην Αθήνα. Η Ellie
+          δουλεύει στο στούντιο Ritual Tattoo Athens, Φωκίωνος 11 &amp;
+          Ερμού, Αθήνα 10563. Για ραντεβού και ερωτήσεις, στείλτε μήνυμα
+          στο Instagram <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">@ellie_tattooer</a>{" "}
+          ή email στο elliemavrou@gmail.com.
+        </p>
+      </div>
+    </section>
+
+    {/* FOOTER */}
+    <footer class="c-foot">
+      <div class="c-in">
+        <nav aria-label="Footer">
+          <a href="#about">Contact</a>
+          <a href="#portfolio">Gallery</a>
+          <a href="#shop">Shop</a>
+          <a href="#findme">Studio Info</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">@ellie_tattooer</a>
+          <a href="https://www.instagram.com/ritualtattooathens/" target="_blank" rel="noreferrer">@ritualtattooathens</a>
+        </nav>
+        <div class="row">
+          <p>© 2026 Ellie Tattooer. All rights reserved.</p>
+          <p>
+            © 2026{" "}
+            <a class="credit" href="https://www.akosds.com" target="_blank" rel="noopener noreferrer">
+              Akos Digital Services
+            </a>
+            . All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <CartDrawer client:idle thumbs={thumbs} betty={cartBetty} />
+
+    {/* COOKIE CONSENT */}
+    <CookieConsent client:idle />
+  </div>
+</Base>
