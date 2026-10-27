@@ -35,6 +35,9 @@ const PRODUCTS = [
     sizes: ["50×70CM"],
     images: ["/portfolio/Backpiece-print.webp", "/portfolio/Backpiece-print2.webp"],
     makingOf: "https://www.instagram.com/p/DWwoJxrjTiL/",
+    blurb: "Limited run, printed from Ellie's backpiece flash. VAT included.",
+    // Its one "size" is its dimensions, already in the name.
+    fixedSize: true,
   },
   {
     id: TEE.id,
@@ -46,6 +49,7 @@ const PRODUCTS = [
       "/portfolio/Oversized-tee2.webp",
       "/portfolio/Oversized-tee3.webp",
     ],
+    blurb: "Boxy fit, heavy cotton. VAT included.",
   },
 ];
 
@@ -190,6 +194,41 @@ const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
   { file: "Screenshot_2026-05-23_01-40-41.webp", alt: "Traditional colorful nude pin-up woman riding a motorcycle tattoo, on the shin" },
 ];
 
+// Every alt starts with its palette ("Black and grey ...", "Black traditional
+// ..." or a colour description), so the filter reads it from there.
+const isBlackWork = (alt: string) => alt.startsWith("Black");
+const GALLERY_FILTERS = [
+  { id: "all", label: "All", count: PORTFOLIO_IMAGES.length },
+  { id: "colour", label: "Colour", count: PORTFOLIO_IMAGES.filter((i) => !isBlackWork(i.alt)).length },
+  { id: "black", label: "Black & grey", count: PORTFOLIO_IMAGES.filter((i) => isBlackWork(i.alt)).length },
+] as const;
+type GalleryFilter = (typeof GALLERY_FILTERS)[number]["id"];
+// Fills whole rows at 3, 4 and 6 columns.
+const WALL_PREVIEW = 24;
+
+const NAV = [
+  { id: "portfolio", label: "Flash wall" },
+  { id: "about", label: "Get tattooed" },
+  { id: "shop", label: "Merch" },
+  { id: "findme", label: "Find the studio" },
+];
+
+// Draggable hero stickers. To add one of Ellie's stickers: drop the file in
+// public/stickers/ and add an entry (ratio = width / height of the art,
+// position as % of the hero). wideOnly hides it on phones.
+const STICKERS: {
+  src: string;
+  ratio: number;
+  width: string;
+  pos: React.CSSProperties;
+  rotate: number;
+  photo?: boolean;
+  wideOnly?: boolean;
+}[] = [
+  { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
+  { src: "/portfolio/Screenshot_2026-08-17_16-28-40.webp", ratio: 1, width: "clamp(80px, 11vw, 140px)", pos: { right: "4%", top: "16%" }, rotate: 8, photo: true, wideOnly: true },
+];
+
 // Cookie-consent persistence. Bump the version suffix to re-prompt everyone.
 const COOKIE_CONSENT_KEY = "ellie_cookie_consent_v1";
 
@@ -212,8 +251,9 @@ export default function EllieTattooer() {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartShake, setCartShake] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState<string | null>(null);
-  const [navScrolled, setNavScrolled] = useState(false);
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
+  const [galleryFilter, setGalleryFilter] = useState<GalleryFilter>("all");
+  const heroRef = useRef<HTMLElement>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // Scoped to the one stock-limited product (the print) — everything else
@@ -236,13 +276,6 @@ export default function EllieTattooer() {
   const [cookieBannerOpen, setCookieBannerOpen] = useState(false);
   const [cookieManage, setCookieManage] = useState(false);
   const [analyticsPref, setAnalyticsPref] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 10);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -471,10 +504,6 @@ export default function EllieTattooer() {
     },
   });
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   // basePrice is undefined only if a cart item somehow lacks it; falls back
   // to the tax-inclusive price so VAT reads as zero rather than throwing.
@@ -484,15 +513,19 @@ export default function EllieTattooer() {
   const shippingCost = selectedZone ? selectedZone.amount / 100 : 0;
 
 
+  const filteredPortfolio =
+    galleryFilter === "all"
+      ? PORTFOLIO_IMAGES
+      : PORTFOLIO_IMAGES.filter((i) => isBlackWork(i.alt) === (galleryFilter === "black"));
   const displayedPortfolioImages = showAllPortfolio
-    ? PORTFOLIO_IMAGES
-    : PORTFOLIO_IMAGES.slice(0, 27);
+    ? filteredPortfolio
+    : filteredPortfolio.slice(0, WALL_PREVIEW);
 
   return (
     <div
       style={{
         fontFamily: "var(--font-oswald), 'Impact', sans-serif",
-        background: "#fecdbf",
+        background: "#92C8B7",
         color: "#111",
         overflowX: "hidden",
       }}
@@ -502,29 +535,6 @@ export default function EllieTattooer() {
 
         html { scroll-behavior: smooth; }
 
-        .nav-link {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 13px;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #111;
-          text-decoration: none;
-          cursor: pointer;
-          padding: 4px 0;
-          position: relative;
-          transition: color 0.2s;
-        }
-        .nav-link::after {
-          content: '';
-          position: absolute;
-          bottom: 0; left: 0;
-          width: 0; height: 2px;
-          background: #FFB3C1;
-          transition: width 0.2s;
-        }
-        @media (hover: hover) and (pointer: fine) { .nav-link:hover::after { width: 100%; } }
-        @media (hover: hover) and (pointer: fine) { .nav-link:hover { color: #FFB3C1; } }
 
         @keyframes shake {
           0%,100% { transform: translateX(0); }
@@ -535,11 +545,6 @@ export default function EllieTattooer() {
         }
         .cart-shake { animation: shake 0.5s ease; }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.7s ease forwards; }
 
         @keyframes pulse {
           0%,100% { transform: scale(1); }
@@ -547,40 +552,6 @@ export default function EllieTattooer() {
         }
         .added-pulse { animation: pulse 0.4s ease; }
 
-        .portfolio-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 3px;
-        }
-        @media (min-width: 640px) {
-          .portfolio-grid {
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 6px;
-          }
-        }
-        .portfolio-item {
-          aspect-ratio: 1;
-          background: #1a1a1a;
-          position: relative;
-          overflow: hidden;
-          cursor: pointer;
-        }
-        @media (hover: hover) and (pointer: fine) { .portfolio-item:hover .portfolio-overlay {
-          opacity: 1;
-        } }
-        .portfolio-overlay {
-          position: absolute; inset: 0;
-          background: rgba(255,179,193,0.85);
-          display: flex; align-items: center; justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s;
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 14px;
-          letter-spacing: 0.2em;
-          color: #111;
-          text-transform: uppercase;
-        }
-        .portfolio-item { cursor: pointer; }
         .lightbox-overlay {
           position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
           background: rgba(0,0,0,0.85); z-index: 2000;
@@ -599,55 +570,6 @@ export default function EllieTattooer() {
         .lightbox-close {
           position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: var(--font-oswald), sans-serif; z-index: 2001;
         }
-        .portfolio-placeholder {
-          width: 100%; height: 100%;
-          background: repeating-linear-gradient(
-            45deg,
-            #1a1a1a,
-            #1a1a1a 10px,
-            #222 10px,
-            #222 20px
-          );
-          display: flex; align-items: center; justify-content: center;
-        }
-
-        .product-card {
-          background: #fff;
-          border: 2px solid #111;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        @media (hover: hover) and (pointer: fine) { .product-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 6px 6px 0 #111;
-        } }
-        .product-media {
-          position: relative;
-          aspect-ratio: 3 / 4;
-          overflow: hidden;
-          background: #1a1a1a;
-        }
-        .product-img-alt {
-          opacity: 0;
-          transition: opacity 0.45s ease;
-        }
-        @media (hover: hover) and (pointer: fine) { .product-card:hover .product-img-alt { opacity: 1; } }
-        .product-media-placeholder {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          color: rgba(255, 255, 255, 0.2);
-          background: repeating-linear-gradient(
-            45deg,
-            #1a1a1a,
-            #1a1a1a 10px,
-            #222 10px,
-            #222 20px
-          );
-        }
-
         .btn-primary {
           background: #111;
           color: #fff;
@@ -683,84 +605,6 @@ export default function EllieTattooer() {
           background: #111;
           color: #fff;
         } }
-
-        .btn-mint {
-          background: #92c8b7;
-          color: #111;
-          border: 2px solid #92c8b7;
-          padding: 10px 22px;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 14px;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s, border-color 0.2s;
-        }
-        @media (hover: hover) and (pointer: fine) { .btn-mint:hover {
-          background: #111;
-          color: #fff;
-          border-color: #111;
-        } }
-
-        .size-btn {
-          border: 1.5px solid #aaa;
-          background: transparent;
-          padding: 5px 10px;
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 12px;
-          cursor: pointer;
-          transition: all 0.15s;
-          letter-spacing: 0.05em;
-        }
-        .size-btn.active {
-          background: #111;
-          color: #fff;
-          border-color: #111;
-        }
-        @media (hover: hover) and (pointer: fine) { .size-btn:hover:not(.active) {
-          border-color: #111;
-        } }
-
-        .section-title {
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 700;
-          font-size: clamp(36px, 6vw, 72px);
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          line-height: 1;
-        }
-
-        .ig-link {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          text-decoration: none;
-          color: #111;
-          transition: color 0.2s;
-          font-family: var(--font-oswald), sans-serif;
-          font-size: 12px;
-          font-weight: 500;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-        }
-        @media (hover: hover) and (pointer: fine) { .ig-link:hover { color: #FFB3C1; } }
-
-        .credit-link {
-          color: inherit;
-          text-decoration: underline;
-          text-underline-offset: 2px;
-          transition: color 0.2s;
-        }
-        @media (hover: hover) and (pointer: fine) { .credit-link:hover { color: #FFB3C1; } }
-
-        .ig-avatar {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #111;
-          flex-shrink: 0;
-        }
 
         .cookie-card {
           position: fixed;
@@ -912,124 +756,165 @@ export default function EllieTattooer() {
         }
         .cart-overlay.open { pointer-events: all; }
 
-        .map-container {
-          width: 100%;
-          height: 360px;
-          border: 2px solid #111;
-          overflow: hidden;
+        /* Sticker Shop: pink over mint, black die-cut outlines like the wordmark. */
+        html { scroll-padding-top: 72px; }
+        .c-top, .c-hero, .c-sec, .c-foot, .c-menu {
+          --P: #FFB8C6; --M: #92C8B7; --K: #141112; --W: #fffafa;
+          font-family: var(--font-dm-mono), ui-monospace, monospace;
+          font-size: 14px;
+          color: var(--K);
+        }
+        .c-in { max-width: 1240px; margin: 0 auto; padding: 0 max(20px, env(safe-area-inset-left, 0px)) 0 max(20px, env(safe-area-inset-right, 0px)); }
+        @media (min-width: 768px) { .c-in { padding-left: 40px; padding-right: 40px; } }
+        .c-display { font-family: var(--font-shrikhand), "Arial Black", sans-serif; font-weight: 400; }
+
+        .c-top { position: sticky; top: 0; z-index: 100; height: 64px; display: flex; align-items: center; }
+        .c-top .c-in { display: flex; align-items: center; gap: 8px; width: 100%; }
+        .c-pill {
+          display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px;
+          background: var(--W); color: var(--K); border: 2.5px solid var(--K); border-radius: 99px;
+          box-shadow: 3px 3px 0 var(--K); font: 500 12px/1 var(--font-dm-mono), monospace;
+          letter-spacing: .06em; text-transform: uppercase; text-decoration: none; white-space: nowrap; cursor: pointer;
+        }
+        .c-pill img { width: 26px; height: auto; }
+        .c-pill.pink { background: var(--P); }
+        .c-pill .count { background: var(--K); color: var(--P); border-radius: 99px; min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 5px; }
+        .c-nav { display: none; gap: 8px; margin-left: auto; }
+        .c-cart { margin-left: auto; }
+        .c-menu-btn { margin-left: auto; }
+        .c-menu-btn + .c-cart { margin-left: 0; }
+        @media (min-width: 900px) {
+          .c-nav { display: flex; }
+          .c-cart { margin-left: 0; }
+          .c-menu-btn { display: none; }
+        }
+        .c-menu {
+          position: absolute; top: 64px; left: 12px; right: 12px; z-index: 101;
+          display: grid; gap: 8px; padding: 14px; background: var(--W);
+          border: 2.5px solid var(--K); border-radius: 20px; box-shadow: 5px 5px 0 var(--K);
+          transform-origin: top center; animation: menuIn var(--spring-smooth-ms) var(--spring-smooth) both;
+        }
+        .c-menu .c-pill { justify-content: center; min-height: 48px; box-shadow: none; }
+        @media (min-width: 900px) { .c-menu { display: none; } }
+
+        .c-hero {
+          /* Seam sits ~72% down the wordmark: 100px top padding + logo height (width / 1.5). */
+          --seam: calc(100px + min(680px, 0.94 * (100vw - 40px)) / 1.5 * 0.72);
+          position: relative; overflow: hidden; margin-top: -64px; padding: 100px 0 44px;
+          background: linear-gradient(var(--P) 0 var(--seam), var(--M) var(--seam));
+          border-bottom: 2.5px solid var(--K);
+        }
+        .c-seam { position: absolute; left: 0; right: 0; top: var(--seam); border-top: 2.5px solid var(--K); }
+        .c-hero .c-in { position: relative; display: grid; justify-items: center; text-align: center; gap: 12px; }
+        .c-logo { width: min(680px, 94%); height: auto; filter: drop-shadow(5px 6px 0 rgba(20,17,18,.9)); animation: c-bob 5s ease-in-out infinite; }
+        @keyframes c-bob { 50% { transform: translateY(-6px) rotate(-1deg); } }
+        .c-hero h1 { font-size: clamp(22px, 4.2vw, 42px); line-height: 1.05; margin-top: -4px; }
+        .c-ctas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+        .c-hint { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+
+        .c-big {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 22px;
+          background: var(--W); color: var(--K); border: 2.5px solid var(--K); border-radius: 14px;
+          box-shadow: 4px 4px 0 var(--K); font: 400 19px/1 var(--font-shrikhand), sans-serif;
+          text-decoration: none; cursor: pointer;
+          transition: transform var(--press-ms) var(--ease-out), box-shadow var(--press-ms) var(--ease-out), background-color .2s;
+        }
+        @media (hover: hover) and (pointer: fine) { .c-big:hover:not(:disabled) { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--K); } }
+        .c-big:active:not(:disabled), .c-pill:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 var(--K); }
+        .c-big.ink { background: var(--K); color: var(--P); }
+        .c-big.mint { background: var(--M); }
+        .c-big:disabled { opacity: .5; cursor: not-allowed; }
+
+        .c-sticker { position: absolute; z-index: 4; height: auto; cursor: grab; user-select: none; -webkit-user-select: none; filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); }
+        .c-sticker:active { cursor: grabbing; }
+        .c-sticker.photo { border: 5px solid var(--W); }
+        @media (max-width: 619px) { .c-sticker.wide-only { display: none; } }
+
+        .c-sec { padding: 56px 0; border-bottom: 2.5px solid var(--K); background: var(--M); }
+        .c-sec.pink { background: var(--P); }
+        .c-sec.white { background: var(--W); }
+        .c-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; margin-bottom: 26px; }
+        .c-head h2 { font-size: clamp(40px, 8vw, 88px); line-height: .95; }
+        .c-head p { max-width: 40ch; margin-top: 6px; }
+        .c-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+        .c-tabs button {
+          min-height: 40px; padding: 0 14px; background: var(--W); color: var(--K);
+          border: 2.5px solid var(--K); border-radius: 99px; cursor: pointer;
+          font: 500 12px/1 var(--font-dm-mono), monospace; letter-spacing: .06em; text-transform: uppercase;
+        }
+        .c-tabs button[aria-pressed="true"] { background: var(--K); color: var(--P); }
+
+        .c-wall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        @media (min-width: 640px) { .c-wall { grid-template-columns: repeat(4, 1fr); gap: 12px; } }
+        @media (min-width: 1000px) { .c-wall { grid-template-columns: repeat(6, 1fr); } }
+        .c-tile {
+          position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; cursor: zoom-in;
+          background: var(--K); border: 2.5px solid var(--K); border-radius: 14px; box-shadow: 3px 3px 0 var(--K);
+          transition: transform var(--spring-bouncy-ms) var(--spring-bouncy);
+          animation: c-pop var(--spring-bouncy-ms) var(--spring-bouncy) both;
+        }
+        @keyframes c-pop { from { transform: scale(.86); } }
+        @media (hover: hover) and (pointer: fine) {
+          .c-tile:nth-child(odd):hover { transform: rotate(-3deg) scale(1.05); }
+          .c-tile:nth-child(even):hover { transform: rotate(3deg) scale(1.05); }
+        }
+        .c-more { display: flex; justify-content: center; margin-top: 22px; }
+
+        .c-get { display: grid; gap: 22px; }
+        @media (min-width: 860px) { .c-get { grid-template-columns: 1.2fr 1fr; align-items: start; } }
+        .c-bubble { background: var(--W); border: 2.5px solid var(--K); border-radius: 22px; padding: 22px; box-shadow: 5px 5px 0 var(--K); font-size: 16px; line-height: 1.6; }
+        .c-bubble b { background: var(--P); padding: 0 4px; font-weight: 500; }
+        .c-bubble a.mail { color: inherit; }
+        .c-side { display: grid; gap: 18px; }
+        .c-me { width: min(260px, 70%); aspect-ratio: 320 / 380; position: relative; border: 2.5px solid var(--K); border-radius: 18px; overflow: hidden; box-shadow: 5px 5px 0 var(--K); transform: rotate(3deg); justify-self: center; background: var(--K); }
+        .c-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+        .c-steps li { display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: center; background: var(--W); border: 2.5px solid var(--K); border-radius: 14px; padding: 10px 12px; counter-increment: s; }
+        .c-steps li::before { content: counter(s); width: 42px; height: 42px; border-radius: 50%; background: var(--M); border: 2.5px solid var(--K); display: grid; place-items: center; font: 400 18px/1 var(--font-shrikhand), sans-serif; }
+
+        .c-merch { display: grid; gap: 24px; }
+        @media (min-width: 720px) { .c-merch { grid-template-columns: 1fr 1fr; } }
+        .c-card { background: var(--W); border: 2.5px solid var(--K); border-radius: 20px; box-shadow: 6px 6px 0 var(--K); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+        .c-card .ph { position: relative; aspect-ratio: 1; background: var(--K); border-bottom: 2.5px solid var(--K); }
+        .c-card .alt { opacity: 0; transition: opacity .45s ease; }
+        @media (hover: hover) and (pointer: fine) { .c-card:hover .alt { opacity: 1; } }
+        .c-price { position: absolute; right: 12px; top: 12px; z-index: 2; width: 76px; height: 76px; border-radius: 50%; background: var(--P); border: 2.5px solid var(--K); display: grid; place-items: center; font: 400 22px/1 var(--font-shrikhand), sans-serif; transform: rotate(10deg); }
+        .c-soldout { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: rgba(20,17,18,.55); }
+        .c-soldout span { background: var(--P); border: 2.5px solid var(--K); border-radius: 12px; padding: 8px 16px; font: 400 24px/1 var(--font-shrikhand), sans-serif; transform: rotate(-6deg); }
+        .c-card .bd { padding: 16px 18px 20px; display: grid; gap: 12px; align-content: start; }
+        .c-card h3 { font-size: 22px; line-height: 1.05; }
+        .c-card .meta { font-size: 12.5px; line-height: 1.55; }
+        .c-sizes { display: flex; flex-wrap: wrap; gap: 8px; }
+        .c-sizes button { min-width: 44px; min-height: 40px; padding: 0 10px; background: var(--W); border: 2.5px solid var(--K); border-radius: 10px; font: 500 13px/1 var(--font-dm-mono), monospace; cursor: pointer; }
+        .c-sizes button[aria-pressed="true"] { background: var(--P); }
+        .c-act { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+        .c-act .c-big { font-size: 16px; min-height: 46px; }
+        .c-act a { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: inherit; }
+        .c-ship { margin-top: 24px; background: var(--W); border: 2.5px dashed var(--K); border-radius: 14px; padding: 12px 16px; font-size: 12.5px; line-height: 1.7; }
+        .c-ship a { color: inherit; }
+
+        .c-find { display: grid; gap: 18px; }
+        @media (min-width: 900px) { .c-find { grid-template-columns: 1fr 1fr 1.3fr; } }
+        .c-box { background: var(--W); border: 2.5px solid var(--K); border-radius: 18px; padding: 18px; box-shadow: 4px 4px 0 var(--K); line-height: 1.7; min-width: 0; }
+        .c-box h3 { font-size: 20px; line-height: 1.1; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .c-box h3 img { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--K); object-fit: cover; }
+        .c-box a { color: inherit; }
+        .c-box.map { padding: 0; overflow: hidden; min-height: 260px; display: grid; }
+        .c-box.map iframe { width: 100%; height: 100%; min-height: 260px; border: 0; display: block; }
+        .c-gr { margin-top: 22px; font-size: 12.5px; line-height: 1.8; max-width: 80ch; }
+        .c-gr a { color: inherit; }
+
+        .c-foot { background: var(--K); color: var(--W); padding: 24px 0 calc(24px + env(safe-area-inset-bottom, 0px)); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; }
+        .c-foot .c-in { display: grid; gap: 16px; }
+        .c-foot nav { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-bottom: 16px; border-bottom: 1px solid #3a3234; }
+        .c-foot a { color: var(--W); text-underline-offset: 3px; }
+        @media (hover: hover) and (pointer: fine) { .c-foot a:hover { color: var(--P); } }
+        .c-foot .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; }
+        .c-foot .credit { color: var(--P); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .c-logo, .c-tile { animation: none; }
         }
 
-        .ornament {
-          display: inline-block;
-          font-size: 24px;
-          color: #c0392b;
-          margin: 0 12px;
-        }
-
-        .hero-section {
-          height: calc(100dvh - 72px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          overflow: hidden;
-          background: #111;
-        }
-        .hero-bg-pattern {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-color: hsl(348, 100%, 86%);
-        }
-        .divider-line {
-          width: 100%; height: 2px; background: #111;
-        }
-        .red-divider {
-          width: 60px; height: 4px; background: #c0392b; margin: 16px 0;
-        }
-
-        .about-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 80px;
-          align-items: center;
-        }
-        .two-col-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 60px;
-          align-items: start;
-        }
-        @media (max-width: 768px) {
-          .about-grid {
-            grid-template-columns: 1fr;
-            gap: 48px;
-          }
-          .two-col-grid {
-            grid-template-columns: 1fr;
-            gap: 40px;
-          }
-        }
-
-        .shop-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 360px));
-          gap: 32px;
-          justify-content: center;
-        }
-        @media (max-width: 768px) {
-          .shop-grid {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 32px;
-          }
-          .shop-grid > * {
-            width: 100%;
-            max-width: 400px;
-          }
-          /* Feature the t-shirt above the print on mobile, where the shop
-             can only show one item at a time. */
-          .shop-grid [data-product="oversized-tee"] {
-            order: -1;
-          }
-        }
-
-        .mobile-menu-btn { display: none; }
-        .mobile-cart-btn { display: none; }
-        .mobile-nav { display: none; }
-
-        .nav-logo-img { height: 333px; }
-
-        @media (max-width: 768px) {
-          .nav-desktop { display: none !important; }
-          .nav-right-desktop { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
-          .mobile-cart-btn { display: flex !important; }
-          .mobile-nav {
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            top: 72px;
-            left: 0;
-            right: 0;
-            background: #fff7f7;
-            border-bottom: 2px solid #111;
-            padding: 16px 24px;
-            gap: 16px;
-            /* .mobile-nav is a sibling of <nav>, which has its own z-index:100
-               stacking context, so this must beat 100 (not just the logo's
-               inner z-index) to render above the bled-through logo below. */
-            z-index: 101;
-            transform-origin: top center;
-            animation: menuIn var(--spring-smooth-ms) var(--spring-smooth) both;
-          }
-          /* Oversized brand logo intentionally bleeds past the 72px navbar,
-             same as desktop, just at a smaller scale. */
-          .nav-logo-img { height: 280px; }
-        }
         @media (prefers-reduced-motion: reduce) {
           @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
           @keyframes cookieUp { from { opacity: 0; } to { opacity: 1; } }
@@ -1088,469 +973,150 @@ export default function EllieTattooer() {
         </div>
       )}
 
-      {/* NAVBAR */}
-      <nav
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          background: "#fff7f7",
-          overflow: "visible",
-          borderBottom: "2px solid #111",
-          boxShadow: navScrolled ? "0 2px 16px rgba(0,0,0,0.08)" : "none",
-          transition: "box-shadow 0.3s",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1400,
-            margin: "0 auto",
-            padding: "0 24px",
-            height: 72,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          {/* LEFT NAV */}
-          <div
-            className="nav-desktop"
-            style={{ display: "flex", gap: 32, alignItems: "center" }}
-          >
-            <span className="nav-link" onClick={() => scrollTo("about")}>
-              CONTACT
-            </span>
-            <span
-              className="nav-link"
-              onClick={() => {
-                setShowAllPortfolio(true);
-                scrollTo("portfolio");
-              }}
-            >
-              GALLERY
-            </span>
-            <span className="nav-link" onClick={() => scrollTo("shop")}>
-              Shop
-            </span>
-            
-            <span className="nav-link" onClick={() => scrollTo("findme")}>
-              STUDIO INFO
-            </span>
-          </div>
-
-          {/* CENTER LOGO */}
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "28%",
-              transform: "translate(-50%, -35%)",
-              display: "flex",
-              alignItems: "center",
-              pointerEvents: "none",
-              zIndex: 110,
-            }}
-          >
-            <Image
-              src="/portfolio/betty.webp"
-              alt="Ellie Tattooer logo"
-              width={566}
-              height={800}
-              priority
-              className="nav-logo-img"
-              style={{
-                width: "auto",
-                objectFit: "contain",
-                pointerEvents: "auto",
-              }}
-            />
-          </div>
-
-          {/* MOBILE LEFT: hamburger */}
+      {/* HEADER */}
+      <header className="c-top">
+        <div className="c-in">
+          <a className="c-pill" href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            <Image src="/stickers/betty.webp" alt="" width={26} height={22} priority />
+            Ellie
+          </a>
+          <nav className="c-nav" aria-label="Main">
+            {NAV.map((l) => (
+              <a key={l.id} className="c-pill" href={`#${l.id}`}>{l.label}</a>
+            ))}
+          </nav>
           <button
-            className="mobile-menu-btn"
+            type="button"
+            className="c-pill c-menu-btn"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="c-menu"
             onClick={() => setMobileMenuOpen((o) => !o)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexDirection: "column", gap: 5 }}
-            title="Menu"
           >
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform var(--spring-snappy-ms) var(--spring-snappy)", transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", opacity: mobileMenuOpen ? 0 : 1, transition: "opacity 160ms var(--ease-out)" }} />
-            <span style={{ display: "block", width: 22, height: 2, background: "#111", transition: "transform var(--spring-snappy-ms) var(--spring-snappy)", transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
+            {mobileMenuOpen ? "Close" : "Menu"}
           </button>
-
-          {/* MOBILE RIGHT: cart */}
           <button
-            className={`mobile-cart-btn${cartShake ? " cart-shake" : ""}`}
+            type="button"
+            className={`c-pill pink c-cart${cartShake ? " cart-shake" : ""}`}
             onClick={handleCartClick}
-            style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 4 }}
-            title="Cart"
+            aria-label={`Cart, ${totalItems} ${totalItems === 1 ? "item" : "items"}`}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-            {totalItems > 0 && (
-              <span style={{ position: "absolute", top: -4, right: -4, background: "#c0392b", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-oswald), sans-serif" }}>
-                {totalItems}
-              </span>
-            )}
+            Cart <span className="count">{totalItems}</span>
           </button>
-
-          {/* RIGHT */}
-          <div
-            className="nav-right-desktop"
-            style={{ display: "flex", alignItems: "center", gap: 20 }}
-          >
-            {/* Studio IG */}
-            <a
-              href="https://www.instagram.com/ritualtattooathens/"
-              target="_blank"
-              rel="noreferrer"
-              className="ig-link"
-              title="Ritual Tattoo Athens on Instagram"
-            >
-              <img
-                src={STUDIO_LOGO}
-                alt="Ritual Tattoo Athens logo"
-                style={{
-                  height: 36,
-                  width: 36,
-                  objectFit: "cover",
-                  border: "2px solid #000",
-                  borderRadius: "50%",
-                }}
-              />
-              <span style={{ fontSize: 11 }}>@ritualtattooathens</span>
-            </a>
-            {/* Ellie IG */}
-            <a
-              href="https://www.instagram.com/ellie_tattooer/"
-              target="_blank"
-              rel="noreferrer"
-              className="ig-link"
-              title="Ellie Tattooer on Instagram"
-            >
-              <Image
-                src={ELLIE_PHOTO}
-                alt="Ellie Tattooer"
-                className="ig-avatar"
-                width={36}
-                height={36}
-              />
-              <span style={{ fontSize: 11 }}>@ellie_tattooer</span>
-            </a>
-
-            {/* Divider */}
-            <div style={{ width: 1, height: 32, background: "#ddd" }} />
-
-            
-
-            {/* Cart */}
-            <button
-              onClick={handleCartClick}
-              className={cartShake ? "cart-shake" : ""}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                position: "relative",
-                padding: 4,
-              }}
-              title="Cart"
-            >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#111"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              {totalItems > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: -4,
-                    right: -4,
-                    background: "#c0392b",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    width: 18,
-                    height: 18,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "var(--font-oswald), sans-serif",
-                  }}
-                >
-                  {totalItems}
-                </span>
-              )}
-            </button>
-          </div>
         </div>
-      </nav>
+        {mobileMenuOpen && (
+          <nav id="c-menu" className="c-menu" aria-label="Mobile">
+            {NAV.map((l) => (
+              <a key={l.id} className="c-pill" href={`#${l.id}`} onClick={() => setMobileMenuOpen(false)}>
+                {l.label}
+              </a>
+            ))}
+          </nav>
+        )}
+      </header>
 
-      {/* MOBILE NAV DROPDOWN */}
-      {mobileMenuOpen && (
-        <div className="mobile-nav">
-          <span className="nav-link" onClick={() => { scrollTo("about"); setMobileMenuOpen(false); }}>CONTACT</span>
-          <span className="nav-link" onClick={() => { setShowAllPortfolio(true); scrollTo("portfolio"); setMobileMenuOpen(false); }}>GALLERY</span>
-          <span className="nav-link" onClick={() => { scrollTo("shop"); setMobileMenuOpen(false); }}>SHOP</span>
-          <span className="nav-link" onClick={() => { scrollTo("findme"); setMobileMenuOpen(false); }}>STUDIO INFO</span>
-        </div>
-      )}
-
-      {/* HERO */}
-      <section className="hero-section">
-        <div className="hero-bg-pattern" />
-        <div
-          style={{
-            position: "relative",
-            textAlign: "center",
-            padding: "16px 24px",
-            color: "#fff",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}
-          className="fade-up"
-        >
+      {/* HERO: the brand swatch, pink over mint, wordmark on the seam */}
+      <section className="c-hero" ref={heroRef}>
+        <div className="c-seam" />
+        <div className="c-in">
           <Image
             src="/portfolio/elliebanner.webp"
             alt="Ellie Tattooer"
-            width={900}
-            height={600}
+            width={1800}
+            height={1200}
             priority
-            style={{
-              maxWidth: "min(900px, 100vw)",
-              width: "auto",
-              maxHeight: "calc(100dvh - 260px)",
-              height: "auto",
-              display: "block",
-              margin: "0 auto",
-            }}
+            sizes="(max-width: 720px) 94vw, 680px"
+            className="c-logo"
           />
-          <div style={{ marginTop: 16, display: "inline-flex", flexDirection: "column", alignItems: "stretch" }}>
-          <p
-            style={{
-              fontFamily: "var(--font-oswald), sans-serif",
-              fontStyle: "normal",
-              fontWeight: 700,
-              fontSize: 23,
-              color: "#ffffff",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              textAlign: "center",
-            }}
-          >
-            American Traditional Tattooing
-          </p>
-          <div
-            style={{
-              marginTop: 20,
-              display: "flex",
-              gap: 16,
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              className="btn-primary"
-              onClick={() => {
-                setShowAllPortfolio(true);
-                scrollTo("portfolio");
-              }}
-              style={{ fontSize: 14 }}
-            >
-              View Gallery
-            </button>
-            <button
-              className="btn-mint"
-              onClick={() => scrollTo("shop")}
-            >
-              Shop
-            </button>
+          <h1 className="c-display">American Traditional Tattooing</h1>
+          <div className="c-ctas">
+            <a className="c-big" href="#portfolio">View gallery</a>
+            <a className="c-big ink" href="#about">Book a tattoo</a>
+            <a className="c-big" href="#shop">Shop</a>
           </div>
-          </div>
+          <p className="c-hint" aria-hidden="true">↔ drag the stickers</p>
         </div>
+        {STICKERS.map((s) => (
+          <motion.div
+            key={s.src}
+            aria-hidden="true"
+            className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}`}
+            style={{ ...s.pos, width: s.width, aspectRatio: s.ratio, rotate: s.rotate }}
+            drag
+            dragConstraints={heroRef}
+            dragElastic={0.2}
+            dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+            whileDrag={{ scale: 1.08 }}
+          >
+            <Image src={s.src} alt="" fill sizes="150px" draggable={false} style={{ objectFit: "cover", pointerEvents: "none" }} />
+          </motion.div>
+        ))}
+        <motion.svg
+          aria-hidden="true"
+          className="c-sticker"
+          viewBox="0 0 100 100"
+          style={{ left: "9%", bottom: "16%", width: "clamp(44px, 6vw, 74px)" }}
+          drag
+          dragConstraints={heroRef}
+          dragElastic={0.2}
+          dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+          whileDrag={{ scale: 1.12 }}
+        >
+          <path d="M50 4 62 36 96 38 69 59 79 93 50 73 21 93 31 59 4 38 38 36Z" fill="#FFB8C6" stroke="#141112" strokeWidth="6" strokeLinejoin="round" />
+        </motion.svg>
       </section>
 
-      {/* ABOUT */}
-      <section
-        id="about"
-        style={{ padding: "100px 24px", background: "#92c8b7" }}
-      >
-        <div
-          className="about-grid"
-          style={{ maxWidth: 1100, margin: "0 auto" }}
-        >
-          <div>
-            <p
-              style={{
-                fontFamily: "var(--font-oswald), sans-serif",
-                fontStyle: "italic",
-                color: "#000000",
-                fontSize: 17,
-                letterSpacing: "0.3em",
-                marginBottom: 12,
-              }}
-            >
-              
-            </p>
-            <h2 className="section-title">
-              CONTACT &
-              <br />
-              INQUIRIES
-            </h2>
-            
-            <p
-              style={{
-                fontFamily: "var(--font-oswald), sans-serif",
-                fontSize: 21,
-                lineHeight: 1.8,
-                color: "#444",
-                marginTop: 8,
-              }}
-            >
-              You can reach me via <strong>Instagram DM</strong> or email to <strong>elliemavrou@gmail.com</strong> Thank you!
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-oswald), sans-serif",
-                fontStyle: "italic",
-                fontSize: 19,
-                lineHeight: 1.8,
-                color: "#666",
-                marginTop: 16,
-              }}
-            ></p>
-            <div style={{ marginTop: 32, display: "flex", gap: 12 }}>
-              <a
-                href="https://www.instagram.com/ellie_tattooer/"
-                target="_blank"
-                rel="noreferrer"
-                className="btn-primary"
-                style={{ textDecoration: "none", display: "inline-block" }}
-              >
-                DM on Instagram
-              </a>
+      {/* FLASH WALL (gallery) */}
+      <section id="portfolio" className="c-sec white">
+        <div className="c-in">
+          <div className="c-head">
+            <div>
+              <h2 className="c-display">Flash wall</h2>
+              <p>A selection of my latest tattoos.</p>
+            </div>
+            <div className="c-tabs" role="group" aria-label="Filter the gallery">
+              {GALLERY_FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={galleryFilter === f.id}
+                  onClick={() => { setGalleryFilter(f.id); setShowAllPortfolio(false); }}
+                >
+                  {f.label} · {f.count}
+                </button>
+              ))}
             </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            {/* width caps at 320px but shrinks to fit narrower phones instead
-                of overflowing the column (aspect-ratio keeps the frame's
-                proportions as it scales down). */}
-            <div style={{ position: "relative", width: "min(320px, 100%)", aspectRatio: "320 / 380" }}>
-              <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  background: "#111",
-                  border: "3px solid #111",
-                  overflow: "hidden",
-                }}
+          <div className="c-wall">
+            {displayedPortfolioImages.map((item, idx) => (
+              <button
+                key={item.file}
+                type="button"
+                className="c-tile"
+                style={{ animationDelay: `${Math.min(idx, 24) * 30}ms` }}
+                onClick={() => setLightboxIndex(idx)}
+                aria-label={`Open photo: ${item.alt}`}
               >
                 <Image
-                  src={ELLIE_PHOTO}
-                  alt="Ellie Tattooer"
+                  src={`/portfolio/${item.file}`}
+                  alt={item.alt}
                   fill
-                  // The source is landscape (900x746) but the frame is portrait,
-                  // so `cover` crops the sides: the width that actually gets used
-                  // is 380px of height x the source ratio, not the frame's 320px.
-                  sizes="(max-width: 480px) 90vw, 320px"
+                  sizes="(max-width: 640px) 33vw, (max-width: 1000px) 25vw, 200px"
                   style={{ objectFit: "cover" }}
                 />
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: -16,
-                  right: -16,
-                  width: "100%",
-                  height: "100%",
-                  border: "3px solid #c0392b",
-                  zIndex: -1,
-                }}
-              />
-            </div>
+              </button>
+            ))}
           </div>
-        </div>
-      </section>
-
-      
-
-      {/* PORTFOLIO */}
-      <section id="portfolio" style={{ padding: "100px 0", background: "#92c8b7" }}>
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "0 24px",
-            marginBottom: 60,
-            textAlign: "center",
-          }}
-        >
-          <h2 className="section-title">GALLERY</h2>
-          
-          <p
-            style={{
-              fontFamily: "var(--font-oswald), sans-serif",
-              fontSize: 20,
-              color: "#555",
-            }}
-          >
-            A selection of my latest tattooes.
-          </p>
-        </div>
-        <div className="portfolio-grid">
-          {displayedPortfolioImages.map((item, idx) => (
-            <div
-              key={item.file}
-              className="portfolio-item"
-              onClick={() => setLightboxIndex(idx)}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setLightboxIndex(idx);
-              }}
-            >
-              <Image
-                src={`/portfolio/${item.file}`}
-                alt={item.alt}
-                fill
-                sizes="(max-width: 640px) 25vw, 180px"
-                style={{ objectFit: "cover" }}
-              />
-              <div className="portfolio-overlay">View</div>
+          {filteredPortfolio.length > WALL_PREVIEW && (
+            <div className="c-more">
+              <button type="button" className="c-big" onClick={() => setShowAllPortfolio((s) => !s)}>
+                {showAllPortfolio ? "Show less" : `Show ${filteredPortfolio.length - WALL_PREVIEW} more`}
+              </button>
             </div>
-          ))}
-        </div>
-        <div style={{ textAlign: "center", marginTop: 18 }}>
-          {PORTFOLIO_IMAGES.length > 27 && (
-            <button
-              className="btn-primary"
-              onClick={() => setShowAllPortfolio((s) => !s)}
-            >
-              {showAllPortfolio
-                ? "Show less"
-                : `Show ${PORTFOLIO_IMAGES.length - 27} more`}
-            </button>
           )}
         </div>
         {lightboxIndex !== null && (
           <Lightbox
-            images={PORTFOLIO_IMAGES}
+            images={filteredPortfolio}
             index={lightboxIndex}
             onIndex={setLightboxIndex}
             onClose={() => setLightboxIndex(null)}
@@ -1558,633 +1124,205 @@ export default function EllieTattooer() {
         )}
       </section>
 
-      <div style={{ borderTop: "2px solid #111" }} />
-
-      {/* SHOP */}
-      <section
-        id="shop"
-        style={{
-          padding: "100px 24px",
-          background: "hsl(348, 100%, 86%)",
-          position: "relative",
-        }}
-      >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 60 }}>
-            <h2 className="section-title">SHOP</h2>
+      {/* GET TATTOOED (contact & inquiries) */}
+      <section id="about" className="c-sec pink">
+        <div className="c-in">
+          <div className="c-head">
+            <h2 className="c-display">Get tattooed</h2>
           </div>
-          <div className="shop-grid">
-            {PRODUCTS.map((product) => (
-              <div key={product.id} className="product-card" data-product={product.id}>
-                {/* Product Image */}
-                <div className="product-media">
-                  {product.images && product.images.length > 0 ? (
-                    <>
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 75vw, 360px"
-                        style={{ objectFit: "cover" }}
-                      />
-                      {product.images[1] && (
-                        <Image
-                          src={product.images[1]}
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 75vw, 360px"
-                          className="product-img-alt"
-                          style={{ objectFit: "cover" }}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <div className="product-media-placeholder">
-                      <div>
-                        <svg
-                          width="56"
-                          height="56"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <circle cx="8.5" cy="8.5" r="1.5" />
-                          <polyline points="21 15 16 10 5 21" />
-                        </svg>
-                        <p
-                          style={{
-                            fontFamily: "var(--font-oswald), sans-serif",
-                            fontSize: 11,
-                            marginTop: 8,
-                            letterSpacing: "0.2em",
-                          }}
-                        >
-                          IMAGE COMING SOON
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {product.id === SCARCE_PRODUCT_ID && soldOut && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        background: "rgba(17,17,17,0.55)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 3,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-oswald), sans-serif",
-                          color: "#fff",
-                          fontSize: 22,
-                          fontWeight: 700,
-                          letterSpacing: "0.2em",
-                          textTransform: "uppercase",
-                          border: "2px solid #fff",
-                          padding: "8px 18px",
-                        }}
-                      >
-                        Sold Out
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {/* Product Info */}
-                <div style={{ padding: 24 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontWeight: 700,
-                        fontSize: 16,
-                        letterSpacing: "0.03em",
-                        textTransform: "uppercase",
-                        minWidth: 0,
-                      }}
-                    >
-                      {product.name}
-                    </h3>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: "#c0392b",
-                        flexShrink: 0,
-                        marginLeft: 12,
-                      }}
-                    >
-                      €{product.price}
-                    </span>
-                  </div>
-                  {(() => {
-                    const isScarce = product.id === SCARCE_PRODUCT_ID;
-                    const soldOutDisabled = isScarce && soldOut;
-                    const resolvedSize =
-                      product.sizes.length > 1 ? selectedSizes[product.id] : product.sizes[0];
-                    const sizeMissing = !resolvedSize;
-                    const disabled = soldOutDisabled || sizeMissing;
-                    const inCart = !!resolvedSize && cart.some(
-                      (i) => i.id === product.id && i.size === resolvedSize,
-                    );
-                    const justAdded = addedFeedback === product.id;
-                    const viewCart = inCart && !justAdded;
-                    return (
-                      <>
-                        {product.sizes.length > 1 && (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-                            {product.sizes.map((size) => {
-                              const active = resolvedSize === size;
-                              return (
-                                <button
-                                  key={size}
-                                  type="button"
-                                  onClick={() =>
-                                    setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))
-                                  }
-                                  style={{
-                                    minWidth: 40,
-                                    padding: "6px 10px",
-                                    border: "2px solid #111",
-                                    background: active ? "hsl(348, 100%, 86%)" : "#fff",
-                                    color: "#111",
-                                    fontFamily: "var(--font-oswald), sans-serif",
-                                    fontWeight: 600,
-                                    fontSize: 13,
-                                    letterSpacing: "0.05em",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {size}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                        <button
-                          className={`btn-primary ${justAdded ? "added-pulse" : ""}`}
-                          style={{
-                            width: "100%",
-                            opacity: disabled ? 0.5 : 1,
-                            cursor: disabled ? "not-allowed" : "pointer",
-                            background: viewCart ? "#fff" : undefined,
-                            color: viewCart ? "#111" : undefined,
-                            border: viewCart ? "2px solid #111" : undefined,
-                          }}
-                          onClick={() =>
-                            disabled
-                              ? undefined
-                              : viewCart || justAdded
-                                ? setCartOpen(true)
-                                : addToCart(product, resolvedSize!)
-                          }
-                          disabled={disabled}
-                        >
-                          {soldOutDisabled
-                            ? "Sold Out"
-                            : sizeMissing
-                              ? "Select a Size"
-                              : justAdded
-                                ? "✓ Added to Cart"
-                                : viewCart
-                                  ? "View Cart"
-                                  : "Add to Cart"}
-                        </button>
-                      </>
-                    );
-                  })()}
-                  {product.makingOf && (
-                    <a
-                      href={product.makingOf}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="ig-link"
-                      style={{ justifyContent: "center", marginTop: 14 }}
-                    >
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <polygon points="6 4 20 12 6 20 6 4" />
-                      </svg>
-                      Watch the making-of
-                    </a>
-                  )}
+          <div className="c-get">
+            <div className="c-side">
+              <div className="c-bubble">
+                <p>
+                  You can reach me via <b>Instagram DM</b> or email to{" "}
+                  <a className="mail" href="mailto:elliemavrou@gmail.com"><b>elliemavrou@gmail.com</b></a> Thank you!
+                </p>
+                <div className="c-ctas" style={{ justifyContent: "flex-start", marginTop: 16 }}>
+                  <a className="c-big ink" href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">
+                    DM on Instagram
+                  </a>
                 </div>
               </div>
-            ))}
+              <ol className="c-steps">
+                <li>Send your idea, placement and rough size.</li>
+                <li>Ellie replies with a date and a quote.</li>
+                <li>Come to Ritual Tattoo Athens and get tattooed.</li>
+              </ol>
+            </div>
+            <div className="c-me">
+              <Image src={ELLIE_PHOTO} alt="Ellie Tattooer" fill sizes="260px" style={{ objectFit: "cover" }} />
+            </div>
           </div>
         </div>
       </section>
 
-      <div style={{ borderTop: "2px solid #111" }} />
-
-      {/* CONTACT + FIND ME */}
-      <section id="contact" style={{ padding: "100px 24px", background: "#92c8b7" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 60 }}>
-            <p
-              style={{
-                fontFamily: "var(--font-oswald), sans-serif",
-                fontStyle: "italic",
-                color: "#1A1A1A",
-                fontSize: 17,
-                letterSpacing: "0.3em",
-                marginBottom: 12,
-              }}
-            >
-              
-            </p>
-            <h2 className="section-title">STUDIO INFO</h2>
-            
-          </div>
-          <div className="two-col-grid">
-            {/* Contact Info */}
-            <div id="findme">
-              <h3
-                style={{
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontWeight: 700,
-                  fontSize: 22,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginBottom: 32,
-                }}
-              >
-              
-              </h3>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                  marginBottom: 20,
-                }}
-              >
-                <img
-                  src={STUDIO_LOGO}
-                  alt="Ritual Tattoo Athens logo"
-                  style={{ height: 36, width: "auto" }}
-                />
-                <span
-                  style={{
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontWeight: 600,
-                    fontSize: 15,
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  RITUAL TATTOO ATHENS
-                </span>
-              </div>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 14 }}
-              >
-                <div
-                  style={{ display: "flex", gap: 12, alignItems: "flex-start" }}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#1A1A1A"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  >
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 14,
-                        letterSpacing: "0.1em",
-                        fontWeight: 600,
-                      }}
-                    >
-                      ADDRESS
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 18,
-                        color: "#555",
-                        marginTop: 2,
-                      }}
-                    >
-                      Fokionos 11 &amp; Ermou
-                      <br />
-                      Athens, 10563, Greece
-                    </p>
-                  </div>
-                </div>
-                <div
-                  style={{ display: "flex", gap: 12, alignItems: "flex-start" }}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#1A1A1A"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.28h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.55 5.55l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16.92z" />
-                  </svg>
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 14,
-                        letterSpacing: "0.1em",
-                        fontWeight: 600,
-                      }}
-                    >
-                      PHONE
-                    </p>
-                    <a
-                      href="tel:+302107777230"
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 18,
-                        color: "#555",
-                        textDecoration: "none",
-                        display: "block",
-                        marginTop: 2,
-                      }}
-                    >
-                      +30 210 77 77 230
-                    </a>
-                    <a
-                      href="tel:+306978907800"
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 18,
-                        color: "#555",
-                        textDecoration: "none",
-                      }}
-                    >
-                      +30 697 89 07 800
-                    </a>
-                  </div>
-                </div>
-                <div
-                  style={{ display: "flex", gap: 12, alignItems: "flex-start" }}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#1A1A1A"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 14,
-                        letterSpacing: "0.1em",
-                        fontWeight: 600,
-                      }}
-                    >
-                      HOURS
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 18,
-                        color: "#555",
-                        marginTop: 2,
-                      }}
-                    >
-                      Mon–Fri: 12:00–21:00
-                      <br />
-                      Saturday: 12:00–20:00
-                    </p>
-                  </div>
-                </div>
-                <div
-                  style={{ display: "flex", gap: 12, alignItems: "flex-start" }}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#92c8b7"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0, marginTop: 2 }}
-                  >
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                  </svg>
-                  <div>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 14,
-                        letterSpacing: "0.1em",
-                        fontWeight: 600,
-                      }}
-                    >
-                      
-                    </p>
-                    
-                    
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* MAP */}
+      {/* MERCH (shop) */}
+      <section id="shop" className="c-sec">
+        <div className="c-in">
+          <div className="c-head">
             <div>
-              <div className="map-container">
-                <iframe
-                  src="https://www.google.com/maps?q=Ritual%20Tattoo%20Athens%2C%20Fokionos%2011%20%26%20Ermou%2C%20Athens%2010563%2C%20Greece&output=embed"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Ritual Tattoo Athens"
-                />
-              </div>
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#1A1A1A"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                <span
-                  style={{
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontSize: 13,
-                    letterSpacing: "0.1em",
-                    color: "#555",
-                  }}
-                >
-                  Fokionos 11 &amp; Ermou, Athens 10563
-                </span>
-              </div>
+              <h2 className="c-display">Merch</h2>
+              <p>Signed and shipped from Athens.</p>
+            </div>
+          </div>
+          <div className="c-merch">
+            {PRODUCTS.map((product) => {
+              const isScarce = product.id === SCARCE_PRODUCT_ID;
+              const soldOutDisabled = isScarce && soldOut;
+              const resolvedSize =
+                product.sizes.length > 1 ? selectedSizes[product.id] : product.sizes[0];
+              const sizeMissing = !resolvedSize;
+              const disabled = soldOutDisabled || sizeMissing;
+              const inCart = !!resolvedSize && cart.some(
+                (i) => i.id === product.id && i.size === resolvedSize,
+              );
+              const justAdded = addedFeedback === product.id;
+              const viewCart = inCart && !justAdded;
+              return (
+                <article key={product.id} className="c-card">
+                  <div className="ph">
+                    <span className="c-price">€{product.price}</span>
+                    <Image src={product.images[0]} alt={product.name} fill sizes="(max-width: 720px) 90vw, 560px" style={{ objectFit: "cover" }} />
+                    {product.images[1] && (
+                      <Image src={product.images[1]} alt="" fill sizes="(max-width: 720px) 90vw, 560px" className="alt" style={{ objectFit: "cover" }} />
+                    )}
+                    {soldOutDisabled && <div className="c-soldout"><span>Sold out</span></div>}
+                  </div>
+                  <div className="bd">
+                    <h3 className="c-display">{product.name}</h3>
+                    <p className="meta">{product.blurb}</p>
+                    {product.sizes.length > 1 ? (
+                      <div className="c-sizes" role="group" aria-label="Size">
+                        {product.sizes.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            aria-pressed={resolvedSize === size}
+                            onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: size }))}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      !product.fixedSize && <p className="meta">Size: {product.sizes[0]}</p>
+                    )}
+                    <div className="c-act">
+                      <button
+                        type="button"
+                        className={`c-big${viewCart ? "" : " mint"}${justAdded ? " added-pulse" : ""}`}
+                        disabled={disabled}
+                        onClick={() =>
+                          viewCart || justAdded ? setCartOpen(true) : addToCart(product, resolvedSize!)
+                        }
+                      >
+                        {soldOutDisabled
+                          ? "Sold out"
+                          : sizeMissing
+                            ? "Select a size"
+                            : justAdded
+                              ? "✓ Added to cart"
+                              : viewCart
+                                ? "View cart"
+                                : "Add to cart"}
+                      </button>
+                      {product.makingOf && (
+                        <a href={product.makingOf} target="_blank" rel="noreferrer">▶ Watch the making-of</a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <p className="c-ship">
+            Shipping by Greek postcode:{" "}
+            {SHIPPING_ZONES.map((z) => `${z.label} €${(z.amount / 100).toFixed(2)}`).join(" · ")}
+            {" · "}International orders:{" "}
+            <a href={INTERNATIONAL_DM_URL} target="_blank" rel="noreferrer">DM @ellie_tattooer</a>
+          </p>
+        </div>
+      </section>
 
-              {/* Greek summary of the same details above. The studio is in
-                  Athens and most walk-in clients search in Greek, but every
-                  other word on this page is English, so none of that intent
-                  could reach the site. Server-rendered and visible: real
-                  content for readers, not a crawler-only block. */}
-              <p
-                lang="el"
-                style={{
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontSize: 13,
-                  lineHeight: 1.9,
-                  letterSpacing: "0.02em",
-                  color: "#555",
-                  marginTop: 24,
-                  paddingTop: 20,
-                  borderTop: "1px solid #e0d6d6",
-                }}
-              >
-                Τατουάζ σε στυλ American Traditional στην Αθήνα. Η Ellie
-                δουλεύει στο στούντιο Ritual Tattoo Athens, Φωκίωνος 11 &amp;
-                Ερμού, Αθήνα 10563. Για ραντεβού και ερωτήσεις, στείλτε μήνυμα
-                στο Instagram <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer" style={{ color: "#c0392b" }}>@ellie_tattooer</a>{" "}
-                ή email στο elliemavrou@gmail.com.
+      {/* FIND THE STUDIO (studio info) */}
+      <section id="findme" className="c-sec white">
+        <div className="c-in">
+          <div className="c-head">
+            <h2 className="c-display">Find the studio</h2>
+          </div>
+          <div className="c-find">
+            <div className="c-box">
+              <h3 className="c-display">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={STUDIO_LOGO} alt="Ritual Tattoo Athens logo" />
+                Ritual Tattoo Athens
+              </h3>
+              <p>
+                Fokionos 11 &amp; Ermou
+                <br />
+                Athens, 10563, Greece
+                <br />
+                <a href="https://www.instagram.com/ritualtattooathens/" target="_blank" rel="noreferrer">@ritualtattooathens</a>
               </p>
             </div>
+            <div className="c-box">
+              <h3 className="c-display">Hours &amp; phone</h3>
+              <p>
+                Mon–Fri: 12:00–21:00
+                <br />
+                Saturday: 12:00–20:00
+                <br />
+                <a href="tel:+302107777230">+30 210 77 77 230</a>
+                <br />
+                <a href="tel:+306978907800">+30 697 89 07 800</a>
+              </p>
+            </div>
+            <div className="c-box map">
+              <iframe
+                src="https://www.google.com/maps?q=Ritual%20Tattoo%20Athens%2C%20Fokionos%2011%20%26%20Ermou%2C%20Athens%2010563%2C%20Greece&output=embed"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Map: Ritual Tattoo Athens, Fokionos 11 & Ermou"
+              />
+            </div>
           </div>
+
+          {/* Greek summary of the same details. Most walk-in clients search in
+              Greek, so this is real content for readers, not a crawler block. */}
+          <p className="c-gr" lang="el">
+            Τατουάζ σε στυλ American Traditional στην Αθήνα. Η Ellie
+            δουλεύει στο στούντιο Ritual Tattoo Athens, Φωκίωνος 11 &amp;
+            Ερμού, Αθήνα 10563. Για ραντεβού και ερωτήσεις, στείλτε μήνυμα
+            στο Instagram <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">@ellie_tattooer</a>{" "}
+            ή email στο elliemavrou@gmail.com.
+          </p>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer
-        style={{
-          background: "#fff7f7",
-          color: "#fff",
-          padding: "28px 24px",
-          borderTop: "3px solid #1A1A1A",
-        }}
-      >
-        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-          <nav
-            aria-label="Footer"
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 20,
-              marginBottom: 20,
-              paddingBottom: 20,
-              borderBottom: "1px solid #ddd",
-            }}
-          >
-            {[
-              { href: "#about", label: "Contact" },
-              { href: "#portfolio", label: "Gallery" },
-              { href: "#shop", label: "Shop" },
-              { href: "#findme", label: "Studio Info" },
-            ].map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="ig-link"
-                style={{ fontSize: 11 }}
-              >
-                {l.label}
-              </a>
-            ))}
-            <Link href="/privacy" className="ig-link" style={{ fontSize: 11 }}>
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="ig-link" style={{ fontSize: 11 }}>
-              Terms of Service
-            </Link>
+      <footer className="c-foot">
+        <div className="c-in">
+          <nav aria-label="Footer">
+            <a href="#about">Contact</a>
+            <a href="#portfolio">Gallery</a>
+            <a href="#shop">Shop</a>
+            <a href="#findme">Studio Info</a>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/terms">Terms of Service</Link>
+            <a href="https://www.instagram.com/ellie_tattooer/" target="_blank" rel="noreferrer">@ellie_tattooer</a>
+            <a href="https://www.instagram.com/ritualtattooathens/" target="_blank" rel="noreferrer">@ritualtattooathens</a>
           </nav>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "var(--font-oswald), sans-serif",
-              fontSize: 12,
-              letterSpacing: "0.15em",
-              color: "#1A1A1A",
-            }}
-          >
-            © 2026 ELLIE TATTOOER. ALL RIGHTS RESERVED.
-          </p>
-          <p
-            style={{
-              fontFamily: "var(--font-oswald), sans-serif",
-              fontSize: 12,
-              letterSpacing: "0.15em",
-              color: "#1A1A1A",
-            }}
-          >
-            © 2026{" "}
-            <a
-              href="https://akosds.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="credit-link"
-            >
-              AKOS DIGITAL
-            </a>
-            . ALL RIGHTS RESERVED.
-          </p>
-        </div>
+          <div className="row">
+            <p>© 2026 Ellie Tattooer. All rights reserved.</p>
+            <p>
+              © 2026{" "}
+              <a className="credit" href="https://www.akosds.com" target="_blank" rel="noopener noreferrer">
+                Akos Digital Services
+              </a>
+              . All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
 

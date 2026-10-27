@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Oswald } from "next/font/google";
+import { DM_Mono, Oswald, Shrikhand } from "next/font/google";
 import Script from "next/script";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import "./globals.css";
@@ -8,6 +8,20 @@ const oswald = Oswald({
   variable: "--font-oswald",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Home page display face (matches the bubble wordmark) and its label/body face.
+const shrikhand = Shrikhand({
+  variable: "--font-shrikhand",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+const dmMono = DM_Mono({
+  variable: "--font-dm-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -92,7 +106,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${oswald.variable} h-full antialiased`}
+      className={`${oswald.variable} ${shrikhand.variable} ${dmMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <script
