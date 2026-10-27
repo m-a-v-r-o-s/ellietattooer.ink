@@ -1,6 +1,5 @@
 // Run: node --conditions=react-server scripts/check-client-ip.ts
 import assert from "node:assert/strict";
-// @ts-expect-error .ts extension is needed for node's native type stripping
 import { clientIp } from "../lib/rate-limit.ts";
 
 const h = (o: Record<string, string>) => new Headers(o);

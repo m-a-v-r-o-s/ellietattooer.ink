@@ -1,18 +1,19 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
+export default defineConfig([
+  ...tseslint.configs.recommended,
+  reactHooks.configs.flat["recommended-latest"],
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    "dist/**",
     ".next/**",
-    "out/**",
-    "build/**",
+    ".astro/**",
+    // Old Next.js app, pending removal.
+    "app/**",
+    "components/**",
+    "proxy.ts",
+    "next.config.ts",
     "next-env.d.ts",
   ]),
 ]);
-
-export default eslintConfig;

@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { clientIp } from "@/lib/rate-limit";
 
-// The one Basic Auth check for /admin. Called by proxy.ts (first gate) and by
+// The one Basic Auth check for /admin. Called by src/middleware.ts (first gate) and by
 // the admin page itself, because a proxy must never be the only check
 // (matcher gaps, CVE-2025-29927).
 

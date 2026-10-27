@@ -1,0 +1,136 @@
+---
+import { Font } from "astro:assets";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
+import "../styles/globals.css";
+
+interface Props {
+  /** Page title, shown as "<title> | Ellie Tattooer". Omit for the home title. */
+  title?: string;
+  description?: string;
+  /** Canonical path. Apex and www both answer, so without this the site
+   *  competes with itself for every page; www is the canonical host, matching
+   *  the other sites and the sitemap registered in Search Console. */
+  path?: string;
+  /** Page-specific Open Graph (legal pages) instead of the site card. */
+  pageOg?: boolean;
+  robots?: string;
+}
+
+const DESCRIPTION =
+  "American Traditional tattoo artist working out of Ritual Tattoo Athens, Fokionos 11 & Ermou. Τατουάζ στην Αθήνα. Browse the gallery, shop signed prints, and get in touch to book a session.";
+
+const { title, description = DESCRIPTION, path, pageOg = false, robots } = Astro.props;
+
+// The starred wordmark is the on-page branding; the title tag is what a
+// search result shows, so it names the craft and the city instead.
+const fullTitle = title
+  ? `${title} | ${SITE_NAME}`
+  : "Ellie Tattooer: American Traditional Tattoo Artist in Athens";
+const canonical = path === undefined ? null : path === "/" ? SITE_URL : `${SITE_URL}${path}`;
+const ogImage = `${SITE_URL}/portfolio/elliebanner.webp`;
+
+// Google Analytics (GA4) is unwired until PUBLIC_GA_MEASUREMENT_ID is set at
+// build time, see .env.example. Consent defaults to denied; the cookie card
+// (src/components/CookieConsent.tsx) calls window.gtag('consent', 'update', ...)
+// once the visitor chooses, via its applyConsent() helper.
+const GA_ID = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+
+// Studio entity schema. Address, phones and the studio link are the same ones
+// rendered in the Studio Info section; the profile links come from the header
+// and contact sections.
+const STUDIO_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "TattooParlor",
+  "@id": `${SITE_URL}/#studio`,
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: DESCRIPTION,
+  image: ogImage,
+  email: "elliemavrou@gmail.com",
+  telephone: "+30 210 77 77 230",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Fokionos 11 & Ermou",
+    addressLocality: "Athens",
+    postalCode: "10563",
+    addressCountry: "GR",
+  },
+  areaServed: { "@type": "City", name: "Athens" },
+  knowsLanguage: ["el", "en"],
+  sameAs: [
+    "https://www.instagram.com/ellie_tattooer/",
+    "https://www.instagram.com/ritualtattooathens/",
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en" class="h-full antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <Font cssVariable="--font-oswald" preload />
+    <Font cssVariable="--font-shrikhand" preload />
+    <Font cssVariable="--font-dm-mono" preload />
+    <slot name="head" />
+    {robots && <meta name="robots" content={robots} />}
+    {/* Header is #fff7f7 in both schemes (the site has no dark theme). */}
+    <meta name="theme-color" content="#fff7f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#fff7f7" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {
+      pageOg ? (
+        <>
+          <meta property="og:title" content={fullTitle} />
+          <meta property="og:description" content={description} />
+          {canonical && <meta property="og:url" content={canonical} />}
+          <meta property="og:type" content="website" />
+          <meta name="twitter:card" content="summary" />
+          <meta name="twitter:title" content={fullTitle} />
+          <meta name="twitter:description" content={description} />
+        </>
+      ) : (
+        <>
+          <meta property="og:title" content="★ ELLIE TATTOOER ★" />
+          <meta property="og:description" content={DESCRIPTION} />
+          <meta property="og:url" content={SITE_URL} />
+          <meta property="og:site_name" content={SITE_NAME} />
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:width" content="1800" />
+          <meta property="og:image:height" content="1200" />
+          <meta property="og:type" content="website" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="★ ELLIE TATTOOER ★" />
+          <meta name="twitter:description" content={DESCRIPTION} />
+          <meta name="twitter:image" content={ogImage} />
+          <meta name="twitter:image:width" content="1800" />
+          <meta name="twitter:image:height" content="1200" />
+        </>
+      )
+    }
+    <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon" />
+  </head>
+  <body class="min-h-full flex flex-col">
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(STUDIO_SCHEMA)} />
+    <slot />
+    {GA_ID && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />}
+    {
+      GA_ID && (
+        <script
+          is:inline
+          set:html={`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('consent', 'default', { analytics_storage: 'denied' });
+            gtag('config', ${JSON.stringify(GA_ID)});
+          `}
+        />
+      )
+    }
+  </body>
+</html>
