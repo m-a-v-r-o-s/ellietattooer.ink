@@ -9,11 +9,5 @@ export default defineConfig([
     "dist/**",
     ".next/**",
     ".astro/**",
-    // Old Next.js app, pending removal.
-    "app/**",
-    "components/**",
-    "proxy.ts",
-    "next.config.ts",
-    "next-env.d.ts",
   ]),
 ]);

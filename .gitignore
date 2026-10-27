@@ -13,16 +13,16 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
 /build
 /dist/
 
 # astro
 .astro/
+
+# leftovers from the old Next.js build, safe to delete locally
+/.next/
+next-env.d.ts
 
 # misc
 .DS_Store
@@ -37,9 +37,5 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
