@@ -68,6 +68,6 @@ body {
 button:not(:disabled), [role="button"], .c-tile, .c-card {
   transition-property: transform, background-color, color, border-color, box-shadow, opacity;
 }
-button:not(:disabled):not(.c-big):not(.c-pill):active, .c-tile:active {
+button:not(:disabled):not(.c-big):not(.c-pill):not(.cookie-btn):active, .c-tile:active {
   transform: scale(var(--press-scale));
 }

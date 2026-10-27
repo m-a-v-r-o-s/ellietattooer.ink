@@ -588,36 +588,24 @@ export default function EllieTattooer() {
           border-color: #040404;
         } }
 
-        .btn-outline {
-          background: transparent;
-          color: #111;
-          border: 2px solid #111;
-          padding: 10px 22px;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 12px;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s;
-        }
-        @media (hover: hover) and (pointer: fine) { .btn-outline:hover {
-          background: #111;
-          color: #fff;
-        } }
-
+        /* Cookie card in the sticker style. The copy is Greek and neither
+           Shrikhand nor DM Mono has Greek glyphs, so the text uses the
+           system monospace (which does) instead of mixing two faces. */
         .cookie-card {
+          --P: #FFB8C6; --M: #92C8B7; --K: #141112; --W: #fffafa;
+          --cookie-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "DejaVu Sans Mono", "Roboto Mono", monospace;
           position: fixed;
-          left: 20px;
+          left: max(20px, env(safe-area-inset-left, 0px));
           bottom: calc(20px + env(safe-area-inset-bottom, 0px));
           z-index: 3000;
           width: min(420px, calc(100vw - 40px));
-          background: #fff;
-          color: #111;
-          border: 2px solid #111;
-          box-shadow: 6px 6px 0 #111;
-          padding: 22px 22px 20px;
-          font-family: var(--font-oswald), sans-serif;
+          background: var(--W);
+          color: var(--K);
+          border: 2.5px solid var(--K);
+          border-radius: 20px;
+          box-shadow: 6px 6px 0 var(--K);
+          padding: 20px 20px 18px;
+          font-family: var(--cookie-mono);
           animation: cookieUp var(--spring-smooth-ms) var(--spring-smooth) forwards;
         }
         @keyframes menuIn {
@@ -629,28 +617,21 @@ export default function EllieTattooer() {
           to { opacity: 1; transform: translateY(0); }
         }
         .cookie-label {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.28em;
-          text-transform: uppercase;
-          color: #111;
-          margin-bottom: 12px;
-        }
-        .cookie-label::before {
-          content: '';
-          width: 22px; height: 3px;
-          background: #c0392b;
-          flex-shrink: 0;
+          display: inline-block;
+          font: 400 24px/1 var(--font-shrikhand), "Arial Black", sans-serif;
+          background: var(--P);
+          border: 2.5px solid var(--K);
+          border-radius: 12px;
+          padding: 6px 12px 8px;
+          transform: rotate(-3deg);
+          margin-bottom: 14px;
         }
         .cookie-body {
-          font-size: 13.5px;
-          line-height: 1.5;
-          color: #333;
-          margin-bottom: 18px;
+          font-size: 13px;
+          line-height: 1.6;
+          margin-bottom: 16px;
         }
+        .cookie-body a { color: inherit; text-decoration: underline; text-decoration-color: var(--P); text-decoration-thickness: 3px; text-underline-offset: 3px; }
         .cookie-actions {
           display: flex;
           gap: 10px;
@@ -658,30 +639,40 @@ export default function EllieTattooer() {
         }
         .cookie-btn {
           flex: 1 1 auto;
-          text-align: center;
-          padding: 11px 16px;
-          font-size: 12px;
+          min-height: 46px;
+          padding: 0 16px;
+          background: var(--W);
+          color: var(--K);
+          border: 2.5px solid var(--K);
+          border-radius: 14px;
+          box-shadow: 3px 3px 0 var(--K);
+          font: 700 12.5px/1 var(--cookie-mono);
+          letter-spacing: .04em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: transform var(--press-ms) var(--ease-out), box-shadow var(--press-ms) var(--ease-out);
         }
+        .cookie-btn.ink { background: var(--K); color: var(--P); }
+        @media (hover: hover) and (pointer: fine) { .cookie-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--K); } }
+        .cookie-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--K); }
         .cookie-link {
           display: inline-block;
           margin-top: 14px;
+          min-height: 24px;
           background: none;
           border: none;
           padding: 0;
           cursor: pointer;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 11.5px;
-          letter-spacing: 0.14em;
+          font: 600 12px/1.6 var(--cookie-mono);
           text-transform: uppercase;
-          color: #111;
+          color: var(--K);
           text-decoration: underline;
+          text-decoration-color: var(--M);
+          text-decoration-thickness: 3px;
           text-underline-offset: 3px;
-          transition: color 0.2s;
         }
-        @media (hover: hover) and (pointer: fine) { .cookie-link:hover { color: #FFB3C1; } }
         .cookie-row {
-          border-top: 2px solid #111;
+          border-top: 2px dashed var(--K);
           padding: 14px 0;
         }
         .cookie-row:first-of-type { border-top: none; padding-top: 0; }
@@ -693,40 +684,38 @@ export default function EllieTattooer() {
         }
         .cookie-row-clickable { cursor: pointer; }
         .cookie-checkbox {
-          width: 18px; height: 18px;
-          accent-color: #111;
+          width: 20px; height: 20px;
+          accent-color: var(--K);
           flex-shrink: 0;
           cursor: pointer;
         }
         .cookie-checkbox:disabled { cursor: default; }
         .cookie-row-title {
-          font-size: 15px;
-          font-weight: 600;
-          letter-spacing: 0.04em;
+          font-size: 13.5px;
+          font-weight: 700;
           text-transform: uppercase;
         }
         .cookie-badge {
           margin-left: auto;
-          font-size: 9.5px;
+          font-size: 10px;
           font-weight: 600;
-          letter-spacing: 0.12em;
           text-transform: uppercase;
-          color: #111;
-          border: 1.5px solid #111;
-          padding: 3px 7px;
+          background: var(--M);
+          border: 2px solid var(--K);
+          border-radius: 99px;
+          padding: 3px 9px;
           white-space: nowrap;
         }
         .cookie-row-desc {
-          font-size: 12.5px;
-          line-height: 1.45;
-          color: #555;
-          padding-left: 28px;
+          font-size: 12px;
+          line-height: 1.55;
+          padding-left: 30px;
         }
         @media (max-width: 480px) {
           .cookie-card {
-            left: 12px; right: 12px; bottom: 12px;
+            left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             width: auto;
-            box-shadow: 4px 4px 0 #111;
+            box-shadow: 4px 4px 0 var(--K);
             padding: 18px 16px 16px;
           }
           .cookie-actions { flex-direction: column; }
@@ -1845,20 +1834,20 @@ export default function EllieTattooer() {
                 λειτουργεί. Με τη συγκατάθεσή σου, προαιρετικά cookies όπως
                 analytics με βοηθούν να τον βελτιώσω. Έχεις τον έλεγχο: αποδοχή,
                 απόρριψη ή διαχείριση προτιμήσεων. Δες την{" "}
-                <Link href="/privacy" style={{ color: "#c0392b", textDecoration: "underline" }}>
+                <Link href="/privacy">
                   Πολιτική Απορρήτου
                 </Link>
                 .
               </p>
               <div className="cookie-actions">
                 <button
-                  className="btn-primary cookie-btn"
+                  className="cookie-btn ink"
                   onClick={() => persistCookieConsent(true)}
                 >
                   Αποδοχή όλων
                 </button>
                 <button
-                  className="btn-outline cookie-btn"
+                  className="cookie-btn"
                   onClick={() => persistCookieConsent(false)}
                 >
                   Απόρριψη όλων
@@ -1910,13 +1899,13 @@ export default function EllieTattooer() {
               </div>
               <div className="cookie-actions">
                 <button
-                  className="btn-outline cookie-btn"
+                  className="cookie-btn"
                   onClick={() => persistCookieConsent(analyticsPref)}
                 >
                   Αποθήκευση προτιμήσεων
                 </button>
                 <button
-                  className="btn-primary cookie-btn"
+                  className="cookie-btn ink"
                   onClick={() => persistCookieConsent(true)}
                 >
                   Αποδοχή όλων
