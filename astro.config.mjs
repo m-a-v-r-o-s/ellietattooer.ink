@@ -56,6 +56,15 @@ export default defineConfig({
   trailingSlash: "never",
   build: { format: "file", inlineStylesheets: "always" },
   server: { port: 3005, host: true },
+  image: {
+    service: {
+      // Every image is generated at build. The adapter still mounts a runtime
+      // /_image endpoint; with sharp behind it anyone could make the server
+      // resize arbitrary sizes, so it gets the passthrough service instead.
+      build: { entrypoint: "astro/assets/services/sharp" },
+      runtime: { entrypoint: "astro/assets/services/noop" },
+    },
+  },
   fonts: [
     {
       provider: google,

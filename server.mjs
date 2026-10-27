@@ -76,7 +76,7 @@ function redirect(res, status, location) {
   res.writeHead(status, { Location: location }).end();
 }
 
-const port = Number(process.env.PORT) || 3005;
+const port = Number(process.env.PORT) || 8080;
 const host = process.env.HOST || "0.0.0.0";
 
 http
