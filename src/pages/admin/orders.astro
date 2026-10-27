@@ -1,0 +1,25 @@
+---
+import Base from "../../layouts/Base.astro";
+import OrdersTable from "../../components/OrdersTable";
+import { checkAdminAuth } from "@/lib/admin-auth";
+import { getStripe, listOrders } from "@/lib/stripe";
+
+// Internal ops page: gated by src/middleware.ts (Basic Auth) and re-checked in
+// the page itself, never linked from the storefront, and excluded from
+// indexing here as a second layer.
+export const prerender = false;
+
+// Second check: the middleware alone must never be the only gate. A page
+// cannot send a 401 challenge, so a missed middleware gets a plain 404 instead.
+if (!checkAdminAuth(Astro.request.headers).ok) return Astro.rewrite("/404");
+
+const after = Astro.url.searchParams.get("after") ?? undefined;
+const stripe = getStripe();
+const page = stripe
+  ? await listOrders(stripe, { limit: 20, startingAfter: after })
+  : { orders: [], hasMore: false, nextCursor: null };
+---
+
+<Base title="Orders" path="/admin/orders" robots="noindex, nofollow">
+  <OrdersTable configured={!!stripe} after={after} {...page} />
+</Base>
