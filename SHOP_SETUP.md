@@ -40,10 +40,10 @@ Product config (price, sizes, stock) lives in `lib/shop.ts`.
    (use **Test mode** first — key starts with `sk_test_`).
 3. In **Railway → your service → Variables**, add:
    - `STRIPE_SECRET_KEY = sk_test_...`
-   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_test_...` — same dashboard page,
+   - `PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_test_...` — same dashboard page,
      the paired publishable key. Loads Stripe.js for the in-page checkout;
      safe to expose client-side (that's what it's for).
-   - `NEXT_PUBLIC_SITE_URL = https://ellietattooer.com` — set this. It controls
+   - `SITE_URL = https://www.ellietattooer.com` — set this. It controls
      where buyers land after paying, and it is deliberately not read from the
      request headers (those are forgeable).
 4. Redeploy. Done — the shop is live.
@@ -82,6 +82,9 @@ unprotected. The page is also excluded from search indexing.
 
 ## Railway notes
 
-- Build command: `npm run build` · Start command: `npm run start`
-- Railway sets `PORT` automatically; `next start` uses it.
+- Build command: `npm run build` · Start command: `npm run start` (runs `node server.mjs`)
+- Railway sets `PORT` automatically; `server.mjs` listens on it.
+- Node 22.23.4 or newer (pinned in `package.json` `engines`).
+- The publishable key and `PUBLIC_GA_MEASUREMENT_ID` are baked in at build
+  time, so change them and redeploy (not just restart).
 - Required env var: `STRIPE_SECRET_KEY` (see `.env.example`).
