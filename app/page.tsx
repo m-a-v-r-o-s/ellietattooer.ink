@@ -571,22 +571,17 @@ export default function EllieTattooer() {
           position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); background: transparent; border: 2px solid #fff; color: #fff; padding: 8px 10px; cursor: pointer; font-family: var(--font-oswald), sans-serif; z-index: 2001;
         }
         .btn-primary {
-          background: #111;
-          color: #fff;
-          border: 2px solid #111;
-          padding: 12px 28px;
-          font-family: var(--font-oswald), sans-serif;
-          font-weight: 600;
-          font-size: 13px;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s;
+          display: inline-flex; align-items: center; justify-content: center;
+          min-height: 50px; padding: 0 22px;
+          background: #141112; color: #FFB8C6;
+          border: 2.5px solid #141112; border-radius: 14px; box-shadow: 4px 4px 0 #92C8B7;
+          font: 400 18px/1.1 var(--font-shrikhand), "Arial Black", sans-serif;
+          text-align: center; text-decoration: none; cursor: pointer;
+          transition: transform var(--press-ms) var(--ease-out), box-shadow var(--press-ms) var(--ease-out);
         }
-        @media (hover: hover) and (pointer: fine) { .btn-primary:hover {
-          background: #FFB3C1;
-          border-color: #040404;
-        } }
+        .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+        @media (hover: hover) and (pointer: fine) { .btn-primary:hover:not(:disabled) { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #92C8B7; } }
+        .btn-primary:active:not(:disabled) { transform: translate(3px,3px); box-shadow: 1px 1px 0 #92C8B7; }
 
         /* Cookie card in the sticker style. The copy is Greek and neither
            Shrikhand nor DM Mono has Greek glyphs, so the text uses the
@@ -722,21 +717,74 @@ export default function EllieTattooer() {
         }
 
         .cart-drawer {
+          --P: #FFB8C6; --M: #92C8B7; --K: #141112; --W: #fffafa;
           position: fixed;
           top: 0; right: 0;
-          width: min(380px, 100vw);
+          width: min(400px, 100vw);
           height: 100vh;
           height: 100dvh;
           padding-bottom: env(safe-area-inset-bottom, 0px);
-          background: #fff;
-          border-left: 2px solid #111;
+          background: var(--W);
+          color: var(--K);
+          border-left: 2.5px solid var(--K);
+          box-shadow: -6px 0 0 rgba(20,17,18,.12);
           z-index: 1000;
+          font: 14px/1.5 var(--font-dm-mono), ui-monospace, monospace;
           /* x is driven by a motion value (swipe to close, catchable mid-flight). */
           touch-action: pan-y;
           overscroll-behavior: contain;
           display: flex;
           flex-direction: column;
         }
+        .cd-head {
+          flex-shrink: 0; height: 74px; padding: 0 16px 0 22px; padding-top: env(safe-area-inset-top, 0px);
+          box-sizing: content-box;
+          display: flex; align-items: center; justify-content: space-between;
+          background: var(--P); border-bottom: 2.5px solid var(--K);
+        }
+        .cd-head h3 { font: 400 26px/1 var(--font-shrikhand), "Arial Black", sans-serif; display: flex; align-items: center; gap: 10px; }
+        .cd-count { font: 500 13px/1 var(--font-dm-mono), monospace; background: var(--K); color: var(--P); border-radius: 99px; min-width: 26px; height: 26px; display: inline-grid; place-items: center; padding: 0 7px; }
+        .cd-close { width: 44px; height: 44px; display: grid; place-items: center; background: var(--W); color: var(--K); border: 2.5px solid var(--K); border-radius: 50%; box-shadow: 3px 3px 0 var(--K); cursor: pointer; }
+        .cd-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+        .cd-items { padding: 20px; display: grid; gap: 14px; }
+        .cd-empty { display: grid; justify-items: center; gap: 14px; padding: 48px 0; text-align: center; }
+        .cd-empty img { filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); transform: rotate(-8deg); }
+        .cd-empty p { font: 400 22px/1.1 var(--font-shrikhand), "Arial Black", sans-serif; }
+        .cd-item { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: 12px; padding: 12px; background: #fff; border: 2.5px solid var(--K); border-radius: 16px; box-shadow: 3px 3px 0 var(--K); }
+        .cd-thumb { position: relative; width: 72px; height: 72px; border: 2px solid var(--K); border-radius: 10px; overflow: hidden; background: var(--K); }
+        .cd-info { display: grid; gap: 6px; min-width: 0; }
+        .cd-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .cd-name { font: 400 15px/1.15 var(--font-shrikhand), "Arial Black", sans-serif; min-width: 0; }
+        .cd-size { font: 500 12px/1 var(--font-dm-mono), monospace; }
+        .cd-price { font-weight: 500; flex-shrink: 0; background: var(--P); border: 2px solid var(--K); border-radius: 99px; padding: 2px 8px; font-size: 13px; }
+        .cd-vat { font-size: 11px; opacity: .7; }
+        .cd-qty { display: inline-flex; align-items: center; border: 2px solid var(--K); border-radius: 99px; overflow: hidden; height: 36px; }
+        .cd-qty button { width: 36px; height: 100%; background: none; border: 0; font-size: 18px; line-height: 1; color: var(--K); cursor: pointer; }
+        .cd-qty button:disabled { opacity: .3; cursor: not-allowed; }
+        .cd-qty span { min-width: 28px; text-align: center; font-weight: 500; }
+        .cd-remove { background: none; border: 0; min-height: 32px; padding: 0 4px; font: 500 12px/1 var(--font-dm-mono), monospace; text-transform: uppercase; color: var(--K); text-decoration: underline; text-decoration-color: var(--P); text-decoration-thickness: 3px; text-underline-offset: 3px; cursor: pointer; }
+        .cd-foot { padding: 20px; border-top: 2.5px dashed var(--K); display: grid; gap: 12px; }
+        .cd-label { font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+        .cd-postal { position: relative; }
+        .cd-postal input { width: 100%; min-height: 48px; padding: 10px 44px 10px 14px; background: #fff; color: var(--K); border: 2.5px solid var(--K); border-radius: 14px; font: 500 16px/1 var(--font-dm-mono), monospace; letter-spacing: .12em; outline: none; }
+        .cd-postal input:focus-visible { box-shadow: 0 0 0 3px var(--P); }
+        .cd-postal input[aria-invalid="true"] { border-color: #c0392b; }
+        .cd-mark { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; background: #c0392b; color: #fff; }
+        .cd-mark.ok { background: var(--M); color: var(--K); border: 2px solid var(--K); }
+        .cd-note { font-size: 12.5px; opacity: .75; }
+        .cd-zone { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: var(--M); border: 2.5px solid var(--K); border-radius: 99px; font-size: 13px; }
+        .cd-zone span:first-child { font-weight: 500; }
+        .cd-intl { display: grid; gap: 12px; padding: 14px; border: 2.5px dashed var(--K); border-radius: 14px; font-size: 13.5px; }
+        .cd-error { font-size: 13px; color: #b42318; }
+        .cd-error a { color: inherit; }
+        .cd-totals { margin: 4px 0 6px; display: grid; gap: 4px; }
+        .cd-totals div { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; }
+        .cd-totals dd { margin: 0; }
+        .cd-totals .cd-total { margin-top: 8px; padding-top: 10px; border-top: 2px dashed var(--K); align-items: baseline; }
+        .cd-total dt { font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+        .cd-total dd { font: 400 26px/1 var(--font-shrikhand), "Arial Black", sans-serif; }
+        .cd-back { justify-self: start; background: none; border: 0; padding: 0; min-height: 28px; font: 500 12.5px/1 var(--font-dm-mono), monospace; color: var(--K); text-decoration: underline; cursor: pointer; }
+        .cd-secure { font-size: 11.5px; text-align: center; opacity: .65; }
 
         .cart-overlay {
           position: fixed; inset: 0;
@@ -786,16 +834,25 @@ export default function EllieTattooer() {
         .c-menu .c-pill { justify-content: center; min-height: 48px; box-shadow: none; }
         @media (min-width: 900px) { .c-menu { display: none; } }
 
+        /* Fills the first screen. The pink half hangs off the wordmark (its
+           ::before ends ~72% down the logo), so the seam stays on the logo
+           whatever the viewport height. */
         .c-hero {
-          /* Seam sits ~72% down the wordmark: 100px top padding + logo height (width / 1.5). */
-          --seam: calc(100px + min(680px, 0.94 * (100vw - 40px)) / 1.5 * 0.72);
-          position: relative; overflow: hidden; margin-top: -64px; padding: 100px 0 44px;
-          background: linear-gradient(var(--P) 0 var(--seam), var(--M) var(--seam));
+          position: relative; overflow: hidden; isolation: isolate;
+          margin-top: -64px; padding: 100px 0 44px;
+          min-height: 100vh; min-height: 100svh;
+          display: flex; flex-direction: column; justify-content: center;
+          background: var(--W);
           border-bottom: 2.5px solid var(--K);
         }
-        .c-seam { position: absolute; left: 0; right: 0; top: var(--seam); border-top: 2.5px solid var(--K); }
+        .c-logo-wrap { position: relative; width: min(680px, 94%); }
+        .c-logo-wrap::before {
+          content: ""; position: absolute; z-index: -1;
+          left: -100vw; right: -100vw; top: -100vh; bottom: 28%;
+          background: var(--P); border-bottom: 2.5px solid var(--K);
+        }
         .c-hero .c-in { position: relative; display: grid; justify-items: center; text-align: center; gap: 12px; }
-        .c-logo { width: min(680px, 94%); height: auto; filter: drop-shadow(5px 6px 0 rgba(20,17,18,.9)); animation: c-bob 5s ease-in-out infinite; }
+        .c-logo { display: block; width: 100%; height: auto; filter: drop-shadow(5px 6px 0 rgba(20,17,18,.9)); animation: c-bob 5s ease-in-out infinite; }
         @keyframes c-bob { 50% { transform: translateY(-6px) rotate(-1deg); } }
         .c-hero h1 { font-size: clamp(22px, 4.2vw, 42px); line-height: 1.05; margin-top: -4px; }
         .c-ctas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
@@ -920,7 +977,7 @@ export default function EllieTattooer() {
             right: 0,
             zIndex: 3000,
             background: orderStatus === "success" ? "#92c8b7" : "#fff7f7",
-            borderBottom: "2px solid #111",
+            borderBottom: "2.5px solid #141112",
             padding: "calc(14px + env(safe-area-inset-top, 0px)) 48px 14px 24px",
             display: "flex",
             alignItems: "center",
@@ -931,7 +988,7 @@ export default function EllieTattooer() {
         >
           <span
             style={{
-              fontFamily: "var(--font-oswald), sans-serif",
+              fontFamily: "var(--font-dm-mono), ui-monospace, monospace",
               fontWeight: 600,
               fontSize: 14,
               letterSpacing: "0.04em",
@@ -951,7 +1008,7 @@ export default function EllieTattooer() {
               background: "none",
               border: "none",
               cursor: "pointer",
-              fontFamily: "var(--font-oswald), sans-serif",
+              fontFamily: "var(--font-dm-mono), ui-monospace, monospace",
               fontWeight: 700,
               fontSize: 20,
               lineHeight: 1,
@@ -1003,19 +1060,20 @@ export default function EllieTattooer() {
         )}
       </header>
 
-      {/* HERO: the brand swatch, pink over mint, wordmark on the seam */}
+      {/* HERO: pink over white, wordmark on the seam, fills the first screen */}
       <section className="c-hero" ref={heroRef}>
-        <div className="c-seam" />
         <div className="c-in">
-          <Image
-            src="/portfolio/elliebanner.webp"
-            alt="Ellie Tattooer"
-            width={1800}
-            height={1200}
-            priority
-            sizes="(max-width: 720px) 94vw, 680px"
-            className="c-logo"
-          />
+          <div className="c-logo-wrap">
+            <Image
+              src="/portfolio/elliebanner.webp"
+              alt="Ellie Tattooer"
+              width={1800}
+              height={1200}
+              priority
+              sizes="(max-width: 720px) 94vw, 680px"
+              className="c-logo"
+            />
+          </div>
           <h1 className="c-display">American Traditional Tattooing</h1>
           <div className="c-ctas">
             <a className="c-big" href="#portfolio">View gallery</a>
@@ -1043,7 +1101,7 @@ export default function EllieTattooer() {
           aria-hidden="true"
           className="c-sticker"
           viewBox="0 0 100 100"
-          style={{ left: "9%", bottom: "16%", width: "clamp(44px, 6vw, 74px)" }}
+          style={{ left: "5%", bottom: "4%", width: "clamp(44px, 6vw, 74px)" }}
           drag
           dragConstraints={heroRef}
           dragElastic={0.2}
@@ -1055,7 +1113,7 @@ export default function EllieTattooer() {
       </section>
 
       {/* FLASH WALL (gallery) */}
-      <section id="portfolio" className="c-sec white">
+      <section id="portfolio" className="c-sec">
         <div className="c-in">
           <div className="c-head">
             <div>
@@ -1328,196 +1386,86 @@ export default function EllieTattooer() {
         ref={drawerRef}
         {...drawerDrag.handlers}
       >
-        <div
-          style={{
-            height: 74,
-            padding: "0 24px",
-            borderBottom: "2px solid #111",
-            background: "hsl(348, 100%, 86%)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexShrink: 0,
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: "var(--font-oswald), sans-serif",
-              fontWeight: 700,
-              fontSize: 20,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            Your Cart{" "}
-            {totalItems > 0 && (
-              <span style={{ color: "#c0392b" }}>({totalItems})</span>
-            )}
+        <div className="cd-head">
+          <h3>
+            Your cart{" "}
+            {totalItems > 0 && <span className="cd-count">{totalItems}</span>}
           </h3>
-          <button
-            onClick={closeCart}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 4,
-            }}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#111"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
+          <button type="button" className="cd-close" onClick={closeCart} aria-label="Close cart">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
-        <div style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", background: "#fff" }}>
-        <div style={{ padding: "24px" }}>
+        <div className="cd-scroll">
+        <div className="cd-items">
           {cart.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 0" }}>
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ddd"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ margin: "0 auto 16px" }}
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              <p
-                style={{
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontStyle: "italic",
-                  color: "#aaa",
-                  fontSize: 19,
-                }}
-              >
-                Your cart is empty
-              </p>
+            <div className="cd-empty">
+              <Image src="/stickers/betty.webp" alt="" width={110} height={94} />
+              <p>Your cart is empty</p>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {cart.map((item) => (
-                <div
-                  key={`${item.id}-${item.size}`}
-                  style={{
-                    padding: "12px 0",
-                    borderBottom: "1px solid #eee",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontWeight: 600,
-                        fontSize: 14,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                      }}
-                    >
+            cart.map((item) => (
+              <div key={`${item.id}-${item.size}`} className="cd-item">
+                {item.images?.[0] && (
+                  <div className="cd-thumb">
+                    <Image src={item.images[0]} alt="" fill sizes="72px" style={{ objectFit: "cover" }} />
+                  </div>
+                )}
+                <div className="cd-info">
+                  <div className="cd-row">
+                    <p className="cd-name">
                       {item.name}
                       {MULTI_SIZE_IDS.has(item.id) && item.size && (
-                        <span style={{ color: "#888", fontWeight: 400 }}> — {item.size}</span>
+                        <span className="cd-size"> · {item.size}</span>
                       )}
                     </p>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontWeight: 600,
-                        color: "#c0392b",
-                        flexShrink: 0,
-                        marginLeft: 12,
-                      }}
-                    >
-                      €{(item.price * item.qty).toFixed(2)}
-                    </span>
+                    <span className="cd-price">€{(item.price * item.qty).toFixed(2)}</span>
                   </div>
-                  <p
-                    style={{
-                      fontFamily: "var(--font-oswald), sans-serif",
-                      fontSize: 11,
-                      color: "#aaa",
-                      letterSpacing: "0.05em",
-                      marginBottom: 10,
-                    }}
-                  >
+                  <p className="cd-vat">
                     €{((item.basePrice ?? item.price) * item.qty).toFixed(2)} excl. VAT + €
                     {((item.price - (item.basePrice ?? item.price)) * item.qty).toFixed(2)} VAT
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    {/* Qty stepper */}
-                    <div style={{ display: "flex", alignItems: "center", border: "2px solid #111", height: 32 }}>
+                  <div className="cd-row">
+                    <div className="cd-qty">
                       <button
+                        type="button"
                         onClick={() => updateQty(item.id, item.size, -1)}
-                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, color: "#111" }}
+                        aria-label={`Remove one ${item.name}`}
                       >
                         −
                       </button>
-                      <span
-                        style={{
-                          width: 28,
-                          textAlign: "center",
-                          fontFamily: "var(--font-oswald), sans-serif",
-                          fontWeight: 600,
-                          fontSize: 14,
-                          borderLeft: "2px solid #111",
-                          borderRight: "2px solid #111",
-                          lineHeight: "28px",
-                        }}
-                      >
-                        {item.qty}
-                      </span>
+                      <span aria-live="polite">{item.qty}</span>
                       <button
+                        type="button"
                         onClick={() => updateQty(item.id, item.size, +1)}
                         disabled={item.qty >= capFor(item.id)}
-                        style={{ width: 32, height: "100%", background: "none", border: "none", cursor: item.qty >= capFor(item.id) ? "not-allowed" : "pointer", fontSize: 18, lineHeight: 1, color: item.qty >= capFor(item.id) ? "#ccc" : "#111" }}
+                        aria-label={`Add one ${item.name}`}
                       >
                         +
                       </button>
                     </div>
-                    {/* Remove */}
                     <button
+                      type="button"
+                      className="cd-remove"
                       onClick={() => removeFromCart(item.id, item.size)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", fontSize: 13, fontFamily: "var(--font-oswald), sans-serif", letterSpacing: "0.05em" }}
                     >
                       Remove
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           )}
         </div>
         {cart.length > 0 && (
-          <div style={{ padding: "24px", borderTop: "2px solid #111", background: "#fff" }}>
+          <div className="cd-foot">
             {/* Postal code → auto-detect zone */}
-            <label
-              htmlFor="postal-code"
-              style={{
-                display: "block",
-                fontFamily: "var(--font-oswald), sans-serif",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                marginBottom: 6,
-              }}
-            >
+            <label htmlFor="postal-code" className="cd-label">
               Enter your postal code
             </label>
-            <div style={{ position: "relative", marginBottom: 12 }}>
+            <div className="cd-postal">
               <input
                 id="postal-code"
                 type="text"
@@ -1527,6 +1475,7 @@ export default function EllieTattooer() {
                 maxLength={5}
                 placeholder="e.g. 10431"
                 value={postalCode}
+                aria-invalid={postalCode.length === 5 && !selectedZone && shipZone !== "international"}
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, "").slice(0, 5);
                   setPostalCode(v);
@@ -1543,28 +1492,9 @@ export default function EllieTattooer() {
                     setShipZone("");
                   }
                 }}
-                style={{
-                  width: "100%",
-                  padding: "10px 40px 10px 12px",
-                  border: `2px solid ${postalCode.length === 5 && !selectedZone && shipZone !== "international" ? "#c0392b" : "#111"}`,
-                  background: "#fff",
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontSize: 16,
-                  letterSpacing: "0.1em",
-                  outline: "none",
-                }}
               />
               {postalCode.length === 5 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    right: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: 16,
-                    color: selectedZone ? "#2ecc71" : "#c0392b",
-                  }}
-                >
+                <span className={`cd-mark${selectedZone ? " ok" : ""}`} aria-hidden="true">
                   {selectedZone ? "✓" : "✗"}
                 </span>
               )}
@@ -1572,60 +1502,23 @@ export default function EllieTattooer() {
 
             {/* Prompt to enter a postal code before any zone resolves */}
             {shipZone === "" && (
-              <p
-                style={{
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontStyle: "italic",
-                  fontSize: 13,
-                  color: "#888",
-                  lineHeight: 1.5,
-                }}
-              >
+              <p className="cd-note">
                 To calculate shipping costs and delivery time with ELTA Courier.
               </p>
             )}
 
             {/* Detected zone chip */}
             {selectedZone && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "10px 14px",
-                  background: "hsl(348,100%,86%)",
-                  border: "2px solid #111",
-                  marginBottom: 16,
-                  fontFamily: "var(--font-oswald), sans-serif",
-                }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 600 }}>
-                  {selectedZone.label}
-                </span>
-                <span style={{ fontSize: 13, color: "#555" }}>
-                  {selectedZone.delivery}
-                </span>
+              <div className="cd-zone">
+                <span>{selectedZone.label}</span>
+                <span>{selectedZone.delivery}</span>
               </div>
             )}
 
             {/* International */}
             {shipZone === "international" && (
-              <div
-                style={{
-                  border: "2px solid #111",
-                  padding: 16,
-                  background: "#fff7f7",
-                  marginBottom: 16,
-                }}
-              >
-                <p
-                  style={{
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontSize: 15,
-                    lineHeight: 1.5,
-                    marginBottom: 12,
-                  }}
-                >
+              <div className="cd-intl">
+                <p>
                   We currently ship within Greece only. For international orders,
                   send a quick DM and we’ll arrange it.
                 </p>
@@ -1634,14 +1527,7 @@ export default function EllieTattooer() {
                   target="_blank"
                   rel="noreferrer"
                   className="btn-primary"
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    fontSize: 14,
-                    padding: "14px",
-                  }}
+                  style={{ width: "100%" }}
                 >
                   DM on Instagram to order
                 </a>
@@ -1650,22 +1536,9 @@ export default function EllieTattooer() {
 
             {/* Unrecognised */}
             {shipZone === "unknown" && (
-              <p
-                style={{
-                  fontFamily: "var(--font-oswald), sans-serif",
-                  fontSize: 13,
-                  color: "#c0392b",
-                  marginBottom: 16,
-                  lineHeight: 1.5,
-                }}
-              >
+              <p className="cd-error">
                 We couldn’t verify this postal code. Double-check it or{" "}
-                <a
-                  href={INTERNATIONAL_DM_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ color: "#c0392b" }}
-                >
+                <a href={INTERNATIONAL_DM_URL} target="_blank" rel="noreferrer">
                   DM us
                 </a>
                 .
@@ -1675,94 +1548,15 @@ export default function EllieTattooer() {
             {/* Totals + checkout (only when zone known) */}
             {selectedZone && (
               <>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 6,
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontSize: 15,
-                    color: "#444",
-                  }}
-                >
-                  <span>Subtotal (excl. VAT)</span>
-                  <span>€{cartBaseTotal.toFixed(2)}</span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 6,
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontSize: 15,
-                    color: "#444",
-                  }}
-                >
-                  <span>VAT (24%)</span>
-                  <span>€{cartVat.toFixed(2)}</span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 6,
-                    fontFamily: "var(--font-oswald), sans-serif",
-                    fontSize: 15,
-                    color: "#444",
-                  }}
-                >
-                  <span>Shipping</span>
-                  <span>€{shippingCost.toFixed(2)}</span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    margin: "10px 0 16px",
-                    paddingTop: 10,
-                    borderTop: "1px solid #ddd",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-oswald), sans-serif",
-                      fontWeight: 600,
-                      fontSize: 16,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Total
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-oswald), sans-serif",
-                      fontWeight: 700,
-                      fontSize: 20,
-                      color: "#c0392b",
-                    }}
-                  >
-                    €{(cartTotal + shippingCost).toFixed(2)}
-                  </span>
-                </div>
+                <dl className="cd-totals">
+                  <div><dt>Subtotal (excl. VAT)</dt><dd>€{cartBaseTotal.toFixed(2)}</dd></div>
+                  <div><dt>VAT (24%)</dt><dd>€{cartVat.toFixed(2)}</dd></div>
+                  <div><dt>Shipping</dt><dd>€{shippingCost.toFixed(2)}</dd></div>
+                  <div className="cd-total"><dt>Total</dt><dd>€{(cartTotal + shippingCost).toFixed(2)}</dd></div>
+                </dl>
                 {clientSecret ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => setClientSecret(null)}
-                      style={{
-                        display: "block",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontSize: 13,
-                        color: "#666",
-                        padding: 0,
-                        marginBottom: 12,
-                        textDecoration: "underline",
-                      }}
-                    >
+                    <button type="button" className="cd-back" onClick={() => setClientSecret(null)}>
                       ‹ Back to cart details
                     </button>
                     <CheckoutPanel clientSecret={clientSecret} />
@@ -1770,44 +1564,16 @@ export default function EllieTattooer() {
                 ) : (
                   <>
                     <button
+                      type="button"
                       className="btn-primary"
-                      style={{
-                        width: "100%",
-                        fontSize: 14,
-                        padding: "14px",
-                        opacity: checkingOut ? 0.6 : 1,
-                        cursor: checkingOut ? "wait" : "pointer",
-                      }}
+                      style={{ width: "100%", cursor: checkingOut ? "wait" : undefined }}
                       onClick={handleCheckout}
                       disabled={checkingOut}
                     >
-                      {checkingOut ? "Loading payment…" : "Continue to Payment"}
+                      {checkingOut ? "Loading payment…" : "Continue to payment"}
                     </button>
-                    {checkoutError && (
-                      <p
-                        style={{
-                          fontFamily: "var(--font-oswald), sans-serif",
-                          fontSize: 14,
-                          color: "#111",
-                          textAlign: "center",
-                          marginTop: 8,
-                        }}
-                      >
-                        {checkoutError}
-                      </p>
-                    )}
-                    <p
-                      style={{
-                        fontFamily: "var(--font-oswald), sans-serif",
-                        fontStyle: "italic",
-                        fontSize: 13,
-                        color: "#aaa",
-                        textAlign: "center",
-                        marginTop: 10,
-                      }}
-                    >
-                      Secure checkout via Stripe
-                    </p>
+                    {checkoutError && <p className="cd-error" style={{ textAlign: "center", marginTop: 10 }}>{checkoutError}</p>}
+                    <p className="cd-secure">Secure checkout via Stripe</p>
                   </>
                 )}
               </>

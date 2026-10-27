@@ -15,7 +15,7 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 
 const labelStyle: React.CSSProperties = {
-  fontFamily: "var(--font-oswald), sans-serif",
+  fontFamily: "var(--font-dm-mono), ui-monospace, monospace",
   fontSize: 12,
   fontWeight: 600,
   letterSpacing: "0.08em",
@@ -23,10 +23,30 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 8,
 };
 
+// Stripe's fields in the site's sticker style. System monospace rather than a
+// Google-hosted font, so the payment iframe makes no extra third-party request.
+const STRIPE_APPEARANCE = {
+  theme: "stripe" as const,
+  variables: {
+    colorPrimary: "#141112",
+    colorText: "#141112",
+    colorBackground: "#ffffff",
+    colorDanger: "#b42318",
+    borderRadius: "12px",
+    fontFamily: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace',
+  },
+  rules: {
+    ".Input": { border: "2.5px solid #141112", boxShadow: "none" },
+    ".Input:focus": { boxShadow: "0 0 0 3px #FFB8C6" },
+    ".Tab": { border: "2.5px solid #141112" },
+    ".Tab--selected": { backgroundColor: "#FFB8C6" },
+  },
+};
+
 export default function CheckoutPanel({ clientSecret }: { clientSecret: string }) {
   if (!stripePromise) {
     return (
-      <p style={{ fontFamily: "var(--font-oswald), sans-serif", fontSize: 14, color: "#c0392b" }}>
+      <p style={{ fontFamily: "var(--font-dm-mono), ui-monospace, monospace", fontSize: 14, color: "#c0392b" }}>
         Payment isn’t set up yet — please check back soon.
       </p>
     );
@@ -37,7 +57,7 @@ export default function CheckoutPanel({ clientSecret }: { clientSecret: string }
       stripe={stripePromise}
       // No defaultValues.shippingAddress: prefilling is a client-side address
       // update, which server_only sessions reject at load.
-      options={{ clientSecret }}
+      options={{ clientSecret, elementsOptions: { appearance: STRIPE_APPEARANCE } }}
     >
       <PaymentForm />
     </CheckoutElementsProvider>
@@ -54,14 +74,14 @@ function PaymentForm() {
 
   if (checkoutState.type === "loading") {
     return (
-      <p style={{ fontFamily: "var(--font-oswald), sans-serif", fontSize: 14, color: "#888" }}>
+      <p style={{ fontFamily: "var(--font-dm-mono), ui-monospace, monospace", fontSize: 14, color: "#888" }}>
         Loading payment form…
       </p>
     );
   }
   if (checkoutState.type === "error") {
     return (
-      <p style={{ fontFamily: "var(--font-oswald), sans-serif", fontSize: 14, color: "#c0392b" }}>
+      <p style={{ fontFamily: "var(--font-dm-mono), ui-monospace, monospace", fontSize: 14, color: "#c0392b" }}>
         {checkoutState.error.message}
       </p>
     );
@@ -132,7 +152,7 @@ function PaymentForm() {
     }
   };
 
-  const smallText: React.CSSProperties = { fontFamily: "var(--font-oswald), sans-serif", fontSize: 14 };
+  const smallText: React.CSSProperties = { fontFamily: "var(--font-dm-mono), ui-monospace, monospace", fontSize: 14 };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -152,7 +172,7 @@ function PaymentForm() {
                 autoComplete="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                style={{ display: "block", width: "100%", marginTop: 4, padding: "10px 12px", border: "1px solid #ccc", borderRadius: 4, fontSize: 16 }}
+                style={{ display: "block", width: "100%", marginTop: 4, padding: "10px 12px", border: "2.5px solid #141112", borderRadius: 12, fontSize: 16, background: "#fff" }}
               />
             </label>
             <button
@@ -160,7 +180,7 @@ function PaymentForm() {
               className="btn-primary"
               onClick={saveAddress}
               disabled={savingAddress}
-              style={{ width: "100%", fontSize: 13, padding: "10px", marginTop: 8 }}
+              style={{ width: "100%", marginTop: 8 }}
             >
               {savingAddress ? "Saving…" : "Use this address"}
             </button>
@@ -200,13 +220,7 @@ function PaymentForm() {
         type="submit"
         className="btn-primary"
         disabled={!canPay}
-        style={{
-          width: "100%",
-          fontSize: 14,
-          padding: "14px",
-          opacity: canPay ? 1 : 0.6,
-          cursor: canPay ? "pointer" : "not-allowed",
-        }}
+        style={{ width: "100%" }}
       >
         {submitting ? "Processing…" : "Pay now"}
       </button>
