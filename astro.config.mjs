@@ -2,6 +2,15 @@ import { defineConfig, fontProviders } from "astro/config";
 import node from "@astrojs/node";
 import react from "@astrojs/react";
 
+// Next loaded .env.local into process.env, which lib/stripe.ts and the admin
+// gate read at runtime; Vite only exposes .env files on import.meta.env. Real
+// environment variables (Railway) still win, and the file is gitignored.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // no .env.local: fine, e.g. on Railway
+}
+
 // lib/stripe.ts, lib/rate-limit.ts and lib/admin-auth.ts import "server-only"
 // so a secret-bearing module can never end up in a browser bundle. Next
 // resolved it to an empty module on the server through the react-server
@@ -79,6 +88,8 @@ export default defineConfig({
   ],
   vite: {
     plugins: [serverOnly],
+    // Dev otherwise hands "server-only" straight to Node, skipping the plugin.
+    ssr: { noExternal: ["server-only"] },
     define: stripePublishableKey
       ? { "import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY": JSON.stringify(stripePublishableKey) }
       : {},
