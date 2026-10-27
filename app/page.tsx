@@ -73,6 +73,23 @@ type CartItem = Product & {
 };
 
 const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
+  { file: "Screenshot_2026-10-27_07-28-30.webp", alt: "Black traditional octopus tattoo, on the arm" },
+  { file: "Screenshot_2026-10-27_07-28-37.webp", alt: "Traditional colorful fish tattoo with bubbles, on the forearm" },
+  { file: "Screenshot_2026-10-27_07-28-48.webp", alt: "Black traditional UFO abducting a running figure over a picket fence tattoo, on the forearm" },
+  { file: "Screenshot_2026-10-27_07-28-54.webp", alt: "Traditional colorful black cat holding a heart balloon tattoo, on the arm" },
+  { file: "Screenshot_2026-10-27_07-29-14.webp", alt: "Black and grey traditional Nosferatu vampire tattoo, on the upper arm" },
+  { file: "Screenshot_2026-10-27_07-29-29.webp", alt: "Black traditional eye tattoo, on the hand" },
+  { file: "Screenshot_2026-10-27_07-29-46.webp", alt: "Traditional colorful devil baby tattoo with hearts reading 'BORN TO LOVE', on the arm" },
+  { file: "Screenshot_2026-10-27_07-30-08.webp", alt: "Traditional colorful olive branch tattoo next to an amphora, on the forearm" },
+  { file: "Screenshot_2026-10-27_07-30-24.webp", alt: "Black traditional peacock tattoo with flowers" },
+  { file: "Screenshot_2026-10-27_07-30-36.webp", alt: "Traditional colorful skull and crossbones tattoo reading 'death' with a bottle, dice and a boot, on the neck" },
+  { file: "Screenshot_2026-10-27_07-30-44.webp", alt: "Traditional colorful goat head tattoo, on the arm" },
+  { file: "Screenshot_2026-10-27_07-31-03.webp", alt: "Black traditional snarling wolf head tattoo, on the arm" },
+  { file: "Screenshot_2026-10-27_07-31-19.webp", alt: "Traditional colorful flaming sacred heart tattoo wrapped in thorns, on the forearm" },
+  { file: "Screenshot_2026-10-27_07-31-26.webp", alt: "Traditional colorful laughing and crying dice tattoo" },
+  { file: "Screenshot_2026-10-27_07-31-33.webp", alt: "Black traditional crossed nails tattoo" },
+  { file: "Screenshot_2026-10-27_07-31-52.webp", alt: "Traditional colorful hooded skull with a purple cross and a yin-yang tattoo, on the forearm" },
+  { file: "Screenshot_2026-10-27_07-32-13.webp", alt: "Traditional colorful pink panther head tattoo" },
   { file: "Screenshot_2026-08-17_16-24-32.webp", alt: "Traditional Betty Boop tattoo, on the calf" },
   { file: "Screenshot_2026-08-17_16-24-42.webp", alt: "Black and grey traditional swallow tattoo with flowers, on the forearm" },
   { file: "Screenshot_2026-08-17_16-24-49.webp", alt: "Black and grey traditional koi fish with wings tattoo, on the shin" },
