@@ -27,7 +27,7 @@ export const PRODUCTS: ShopProduct[] = [
   {
     id: "backpiece-print",
     name: "Backpiece Print 50×70cm",
-    amount: 7000, // €70.00, VAT included
+    amount: 6000, // €60.00, VAT included
     currency: "eur",
     image: "/portfolio/Backpiece-print.webp",
     maxPerOrder: 1,

@@ -3,7 +3,7 @@
 The shop sells two products, both prices tax-inclusive, via **Stripe
 Checkout**, hosted on **Railway**:
 
-- **Backpiece Print 50×70cm** — €70, single size.
+- **Backpiece Print 50×70cm** — €60, single size.
 - **Oversized T-Shirt** — €35, only size L for now (14 in stock, `sizeStock` in `lib/shop.ts`).
 
 Product config (price, sizes, stock) lives in `lib/shop.ts`.
