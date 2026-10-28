@@ -4,8 +4,10 @@ import { FILL, type Img } from "./cart";
 
 // Draggable hero stickers. To add one of Ellie's stickers: drop the file in
 // public/stickers/ and add an entry (ratio = width / height of the art,
-// position as % of the hero). wideOnly hides it on phones. The hero's bottom
-// padding is a band reserved for the stickers pinned there (see .c-hero).
+// position as % of the hero). wideOnly hides it on phones; lineArt swaps the
+// hard offset shadow, which doubles thin black lines, for a soft one. The
+// hero's bottom padding is a band reserved for the stickers pinned there (see
+// .c-hero).
 export const STICKERS: {
   src: string;
   ratio: number;
@@ -14,9 +16,10 @@ export const STICKERS: {
   rotate: number;
   photo?: boolean;
   wideOnly?: boolean;
+  lineArt?: boolean;
 }[] = [
   { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
-  { src: "/stickers/ritual.webp", ratio: 270 / 288, width: "clamp(70px, 11vw, 135px)", pos: { right: "4%", top: "16%" }, rotate: 8 },
+  { src: "/stickers/ritual.webp", ratio: 282 / 350, width: "clamp(72px, 11vw, 135px)", pos: { right: "4%", top: "16%" }, rotate: 8, lineArt: true },
   { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "20%", bottom: "24px" }, rotate: 10 },
   { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "22%", bottom: "24px" }, rotate: -8 },
 ];
@@ -43,7 +46,7 @@ export default function HeroStickers({ imgs }: { imgs: Img[] }) {
         <motion.div
           key={s.src}
           aria-hidden="true"
-          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}`}
+          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}${s.lineArt ? " line-art" : ""}`}
           style={{ ...s.pos, width: s.width, aspectRatio: s.ratio, rotate: s.rotate }}
           dragConstraints={heroRef}
           whileDrag={{ scale: 1.08 }}

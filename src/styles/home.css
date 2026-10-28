@@ -347,6 +347,7 @@ html { scroll-padding-top: 72px; }
 .c-sticker { position: absolute; z-index: 4; height: auto; cursor: grab; user-select: none; -webkit-user-select: none; filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); }
 .c-sticker:active { cursor: grabbing; }
 .c-sticker.photo { border: 5px solid var(--W); }
+.c-sticker.line-art { filter: drop-shadow(0 2px 4px rgba(20,17,18,.28)); }
 @media (max-width: 619px) { .c-sticker.wide-only { display: none; } }
 .c-star { position: absolute; left: 5%; bottom: 4%; width: clamp(44px, 6vw, 74px); pointer-events: none; filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); }
 
