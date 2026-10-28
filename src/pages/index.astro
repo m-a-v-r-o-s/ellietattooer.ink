@@ -28,7 +28,12 @@ const cards = Object.fromEntries(
 const thumbs = Object.fromEntries(
   await Promise.all(PRODUCTS.map(async (p) => [p.images[0], await img(p.images[0], [144, 256])])),
 );
-const stickers = await Promise.all(STICKERS.map((s) => img(s.src, [160, 320, 480])));
+const stickers = await Promise.all(
+  STICKERS.map(async (s) => ({
+    ...(await img(s.src, [160, 320, 480])),
+    onWhite: s.onWhite ? await img(s.onWhite, [160, 320, 480]) : undefined,
+  })),
+);
 const headerBetty = await img("/stickers/betty.webp", [32, 64]);
 const cartBetty = await img("/stickers/betty.webp", [128, 256]);
 const ellie = await img(ELLIE_PHOTO, [256, 384, 640, 828]);
