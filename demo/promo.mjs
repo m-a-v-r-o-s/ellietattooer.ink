@@ -58,7 +58,9 @@ async function drag(page, selector, dx, dy, steps = 18) {
   const x = b.x + b.width / 2, y = b.y + b.height / 2
   await page.mouse.move(x, y)
   await page.mouse.down()
-  await page.mouse.move(x + dx, y + dy, { steps })
+  // paced, then held still before release, so it is a visible drag and not a fling
+  for (let i = 1; i <= steps; i++) { await page.mouse.move(x + dx * i / steps, y + dy * i / steps); await wait(16) }
+  await wait(300)
   await page.mouse.up()
 }
 
@@ -95,8 +97,8 @@ try {
   await page.waitForSelector('.c-sticker')
   await wait(1500)
 
-  // Hero: fling a sticker
-  await drag(page, '.c-sticker:visible', -90, 140)
+  // Hero: drag the Ritual sticker down over the seam (its text turns black on the white)
+  await drag(page, '.c-sticker:has(img[src*="ritual"])', -40, 150, 40)
   await wait(900)
 
   // Menu to the flash wall
