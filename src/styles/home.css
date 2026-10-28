@@ -349,6 +349,12 @@ html { scroll-padding-top: 72px; }
 .c-sticker.photo { border: 5px solid var(--W); }
 .c-sticker.line-art { filter: drop-shadow(0 2px 4px rgba(20,17,18,.28)); }
 @media (max-width: 619px) { .c-sticker.wide-only { display: none; } }
+/* Short phones: the hero content overflows, so the logo sits at its highest
+   (ink from 100px + 11.9vw down). The Ritual sticker moves up under the header
+   and shrinks to fit above it. */
+@media (max-width: 619px) and (max-height: 800px) {
+  .c-sticker.ritual { top: 68px !important; width: calc(19px + 8.7vw) !important; }
+}
 .c-star { position: absolute; left: 5%; bottom: 4%; width: clamp(44px, 6vw, 74px); pointer-events: none; filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); }
 
 .c-sec { padding: 56px 0; border-bottom: 2.5px solid var(--K); background: var(--M); }

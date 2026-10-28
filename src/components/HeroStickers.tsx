@@ -19,9 +19,10 @@ export const STICKERS: {
   wideOnly?: boolean;
   lineArt?: boolean;
   onWhite?: string;
+  name?: string; // extra class, for per-sticker CSS
 }[] = [
   { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
-  { src: "/stickers/ritual.webp", ratio: 282 / 350, width: "clamp(72px, 11vw, 135px)", pos: { right: "4%", top: "16%" }, rotate: 8, lineArt: true, onWhite: "/stickers/ritual-on-white.webp" },
+  { src: "/stickers/ritual.webp", ratio: 282 / 350, width: "clamp(72px, 11vw, 135px)", pos: { right: "4%", top: "16%" }, rotate: 8, lineArt: true, onWhite: "/stickers/ritual-on-white.webp", name: "ritual" },
   { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "20%", bottom: "24px" }, rotate: 10 },
   { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "22%", bottom: "24px" }, rotate: -8 },
 ];
@@ -75,7 +76,7 @@ export default function HeroStickers({ imgs }: { imgs: (Img & { onWhite?: Img })
         <motion.div
           key={s.src}
           aria-hidden="true"
-          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}${s.lineArt ? " line-art" : ""}`}
+          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}${s.lineArt ? " line-art" : ""}${s.name ? ` ${s.name}` : ""}`}
           style={{ ...s.pos, width: s.width, aspectRatio: s.ratio, rotate: s.rotate }}
           dragConstraints={heroRef}
           whileDrag={{ scale: 1.08 }}
