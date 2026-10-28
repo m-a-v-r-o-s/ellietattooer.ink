@@ -49,17 +49,6 @@ export default function HeroStickers({ imgs }: { imgs: Img[] }) {
           <img {...imgs[i]} alt="" sizes="150px" loading="lazy" decoding="async" draggable={false} style={{ ...FILL, pointerEvents: "none" }} />
         </motion.div>
       ))}
-      <motion.svg
-        aria-hidden="true"
-        className="c-sticker"
-        viewBox="0 0 100 100"
-        style={{ left: "5%", bottom: "4%", width: "clamp(44px, 6vw, 74px)" }}
-        dragConstraints={heroRef}
-        whileDrag={{ scale: 1.12 }}
-        {...drag}
-      >
-        <path d="M50 4 62 36 96 38 69 59 79 93 50 73 21 93 31 59 4 38 38 36Z" fill="#FFB8C6" stroke="#141112" strokeWidth="6" strokeLinejoin="round" />
-      </motion.svg>
     </>
   );
 }

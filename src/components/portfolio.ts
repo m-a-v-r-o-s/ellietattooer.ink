@@ -92,7 +92,7 @@ export const PORTFOLIO_IMAGES: { file: string; alt: string }[] = [
   { file: "Screenshot_2026-05-23_01-34-09.webp", alt: "Traditional colorful crowned portrait tattoo, on the arm" },
   { file: "Screenshot_2026-05-23_01-34-18.webp", alt: "Traditional colorful mermaid combing her hair tattoo, on the forearm" },
   { file: "Screenshot_2026-05-23_01-34-24.webp", alt: "Black traditional tattoo of two faces with barbed wire and a locket, on the arm" },
-  { file: "Screenshot_2026-05-23_01-34-31.webp", alt: "Black traditional skull with a panther and blood drops tattoo, on the arm" },
+  { file: "Screenshot_2026-05-23_01-34-31.webp", alt: "Traditional colorful panther skull with red blood drops tattoo, on the arm" },
   { file: "Screenshot_2026-05-23_01-34-42.webp", alt: "Traditional colorful pin-up girl tattoo with the word HATE, on the arm" },
   { file: "Screenshot_2026-05-23_01-34-52.webp", alt: "Traditional colorful couple riding a scooter through flames tattoo, on the arm" },
   { file: "Screenshot_2026-05-23_01-35-01.webp", alt: "Traditional colorful nude pin-up woman tattoo, on the shoulder" },

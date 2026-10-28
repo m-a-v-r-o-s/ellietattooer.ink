@@ -42,18 +42,34 @@ const FILL = "position:absolute;height:100%;width:100%;inset:0;object-fit:cover;
 
     {/* HERO: pink over white, wordmark on the seam, fills the first screen */}
     <section class="c-hero">
+      <svg class="c-star" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 4 62 36 96 38 69 59 79 93 50 73 21 93 31 59 4 38 38 36Z" fill="#FFB8C6" stroke="#141112" stroke-width="6" stroke-linejoin="round" />
+      </svg>
       <div class="c-in">
         <div class="c-logo-wrap">
-          <Image
-            src={meta("/portfolio/elliebanner.webp")}
-            alt="Ellie Tattooer"
-            widths={[640, 750, 828, 1080, 1200, 1800]}
-            sizes="(max-width: 720px) 94vw, 680px"
-            format="webp"
-            quality={75}
-            priority
-            class="c-logo"
-          />
+          {/* Two layers so only the lettering casts the shadow, not the webs */}
+          <div class="c-logo">
+            <Image
+              src={meta("/portfolio/ellie-letters.webp")}
+              alt="Ellie Tattooer"
+              widths={[640, 750, 828, 1080, 1200, 1800]}
+              sizes="(max-width: 720px) 94vw, 680px"
+              format="webp"
+              quality={75}
+              priority
+              class="c-logo-letters"
+            />
+            <Image
+              src={meta("/portfolio/ellie-webs.webp")}
+              alt=""
+              widths={[640, 750, 828, 1080, 1200, 1800]}
+              sizes="(max-width: 720px) 94vw, 680px"
+              format="webp"
+              quality={75}
+              priority
+              class="c-logo-webs"
+            />
+          </div>
         </div>
         <h1 class="c-display">American Traditional Tattooing</h1>
         <div class="c-ctas">
