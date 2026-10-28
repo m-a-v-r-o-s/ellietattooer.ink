@@ -4,20 +4,23 @@ import { FILL, type Img } from "./cart";
 
 // Draggable hero stickers. To add one of Ellie's stickers: drop the file in
 // public/stickers/ and add an entry (ratio = width / height of the art,
-// position as % of the hero). wideOnly hides it on phones.
+// position as % of the hero). wideOnly hides it on phones. Below 1200px the
+// headline and buttons leave no side room, so narrowPos moves it up into the
+// pink band above the logo.
 export const STICKERS: {
   src: string;
   ratio: number;
   width: string;
   pos: React.CSSProperties;
+  narrowPos?: { left?: string; right?: string; top?: string; bottom?: string };
   rotate: number;
   photo?: boolean;
   wideOnly?: boolean;
 }[] = [
   { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
   { src: "/portfolio/Screenshot_2026-08-17_16-28-40.webp", ratio: 1, width: "clamp(80px, 11vw, 140px)", pos: { right: "4%", top: "16%" }, rotate: 8, photo: true, wideOnly: true },
-  { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "6%", bottom: "8%" }, rotate: 10 },
-  { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "12%", bottom: "12%" }, rotate: -8 },
+  { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "4%", bottom: "8%" }, narrowPos: { right: "22%", top: "70px" }, rotate: 10 },
+  { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "4%", bottom: "20%" }, narrowPos: { left: "30%", top: "84px" }, rotate: -8 },
 ];
 
 const drag = {
@@ -42,8 +45,11 @@ export default function HeroStickers({ imgs }: { imgs: Img[] }) {
         <motion.div
           key={s.src}
           aria-hidden="true"
-          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}`}
-          style={{ ...s.pos, width: s.width, aspectRatio: s.ratio, rotate: s.rotate }}
+          className={`c-sticker${s.photo ? " photo" : ""}${s.wideOnly ? " wide-only" : ""}${s.narrowPos ? " narrow-pos" : ""}`}
+          style={{
+            ...s.pos, width: s.width, aspectRatio: s.ratio, rotate: s.rotate,
+            ...Object.fromEntries(Object.entries(s.narrowPos ?? {}).map(([k, v]) => [`--p-${k}`, v])),
+          }}
           dragConstraints={heroRef}
           whileDrag={{ scale: 1.08 }}
           {...drag}
