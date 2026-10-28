@@ -84,9 +84,9 @@ try {
   await ctx.addInitScript(overlay)
   const page = await ctx.newPage()
   // Warm the cache so images are in before the take.
-  await page.goto(BASE, { waitUntil: 'networkidle' })
-  for (const s of ['#portfolio', '#about', '#shop', '#findme', 'footer']) await glide(page, s, 150)
-  await page.waitForLoadState('networkidle')
+  await page.goto(BASE, { waitUntil: 'load' })
+  for (const s of ['#portfolio', '#about', '#shop', '#findme', 'footer']) await glide(page, s, 250)
+  await wait(2500)
   await glide(page, 0, 1)
 
   const frames = await record(page)
