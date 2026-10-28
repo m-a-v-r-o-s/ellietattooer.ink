@@ -16,7 +16,7 @@ export const STICKERS: {
   wideOnly?: boolean;
 }[] = [
   { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
-  { src: "/portfolio/Screenshot_2026-08-17_16-28-40.webp", ratio: 1, width: "clamp(80px, 11vw, 140px)", pos: { right: "4%", top: "16%" }, rotate: 8, photo: true, wideOnly: true },
+  { src: "/stickers/ritual.webp", ratio: 270 / 288, width: "clamp(70px, 11vw, 135px)", pos: { right: "4%", top: "16%" }, rotate: 8 },
   { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "20%", bottom: "24px" }, rotate: 10 },
   { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "22%", bottom: "24px" }, rotate: -8 },
 ];
