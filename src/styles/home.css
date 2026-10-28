@@ -307,7 +307,9 @@ html { scroll-padding-top: 72px; }
    whatever the viewport height. */
 .c-hero {
   position: relative; overflow: hidden; isolation: isolate;
-  margin-top: -64px; padding: 100px 0 44px;
+  /* Bottom padding is the sticker band: the tallest bottom sticker
+     (devil-betty, width clamp(80px, 13vw, 150px) at 783/860) + 24px + gap */
+  margin-top: -64px; padding: 100px 0 calc(clamp(80px, 13vw, 150px) * .91 + 56px);
   min-height: 100vh; min-height: 100svh;
   display: flex; flex-direction: column; justify-content: center;
   background: var(--W);
@@ -346,10 +348,6 @@ html { scroll-padding-top: 72px; }
 .c-sticker:active { cursor: grabbing; }
 .c-sticker.photo { border: 5px solid var(--W); }
 @media (max-width: 619px) { .c-sticker.wide-only { display: none; } }
-/* Auto-placed stickers wait for their measured spot, then pop in */
-.c-sticker.auto:not(.placed) { visibility: hidden; }
-.c-sticker.auto.placed { animation: c-pop .5s cubic-bezier(.34, 1.56, .64, 1) both; }
-@keyframes c-pop { from { scale: .4; opacity: 0; } }
 .c-star { position: absolute; left: 5%; bottom: 4%; width: clamp(44px, 6vw, 74px); pointer-events: none; filter: drop-shadow(3px 4px 0 rgba(20,17,18,.85)); }
 
 .c-sec { padding: 56px 0; border-bottom: 2.5px solid var(--K); background: var(--M); }
@@ -440,5 +438,4 @@ html { scroll-padding-top: 72px; }
 @media (prefers-reduced-motion: reduce) {
   @keyframes menuIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes cookieUp { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes c-pop { from { opacity: 0; } }
 }
