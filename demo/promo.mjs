@@ -107,12 +107,13 @@ try {
   await glide(page, '.c-tabs', 500)
   await tap(page, '.c-tabs button >> nth=1')
   await wait(700)
-  await tap(page, '.c-tile >> nth=1')
-  await wait(1000)
+  const skull = '.c-tile[aria-label*="hooded skull"]' // the pink panther is the next photo
+  await glide(page, skull, 600)
+  await wait(250)
+  await tap(page, skull)
+  await wait(1100)
   await tap(page, '.lightbox-next')
-  await wait(650)
-  await tap(page, '.lightbox-next')
-  await wait(650)
+  await wait(1100)
   await tap(page, '.lightbox-close')
   await wait(400)
 
