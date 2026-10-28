@@ -16,6 +16,8 @@ export const STICKERS: {
 }[] = [
   { src: "/stickers/betty.webp", ratio: 271 / 231, width: "clamp(70px, 12vw, 130px)", pos: { left: "5%", top: "16%" }, rotate: -12 },
   { src: "/portfolio/Screenshot_2026-08-17_16-28-40.webp", ratio: 1, width: "clamp(80px, 11vw, 140px)", pos: { right: "4%", top: "16%" }, rotate: 8, photo: true, wideOnly: true },
+  { src: "/stickers/devil-betty.webp", ratio: 860 / 783, width: "clamp(80px, 13vw, 150px)", pos: { right: "6%", bottom: "8%" }, rotate: 10 },
+  { src: "/stickers/lips.webp", ratio: 1, width: "clamp(70px, 11vw, 130px)", pos: { left: "12%", bottom: "12%" }, rotate: -8 },
 ];
 
 const drag = {
