@@ -53,17 +53,6 @@ async function tap(page, selector) {
   await wait(250)
 }
 
-async function drag(page, selector, dx, dy, steps = 18) {
-  const b = await page.locator(selector).first().boundingBox()
-  const x = b.x + b.width / 2, y = b.y + b.height / 2
-  await page.mouse.move(x, y)
-  await page.mouse.down()
-  // paced, then held still before release, so it is a visible drag and not a fling
-  for (let i = 1; i <= steps; i++) { await page.mouse.move(x + dx * i / steps, y + dy * i / steps); await wait(16) }
-  await wait(300)
-  await page.mouse.up()
-}
-
 // Eased glide to an element (or a y offset), with a fixed duration so the cut is predictable.
 const glide = (page, target, ms) => page.evaluate(([target, ms]) => new Promise(done => {
   const from = scrollY
@@ -95,18 +84,12 @@ try {
   await page.reload({ waitUntil: 'load' })
   const start = now()
   await page.waitForSelector('.c-sticker')
-  await wait(1500)
+  await wait(1800)
 
-  // Hero: drag the Ritual sticker down over the seam (its text turns black on the white)
-  await drag(page, '.c-sticker:has(img[src*="ritual"])', -40, 150, 40)
-  await wait(900)
-
-  // Menu to the flash wall
-  await tap(page, '.c-menu-btn')
-  await wait(450)
-  await tap(page, '#c-menu a:has-text("Flash wall")')
-  await wait(1100)
-  await glide(page, '.c-tabs', 500)
+  // Hero, then down to the flash wall
+  await glide(page, '#portfolio', 1000)
+  await wait(500)
+  await glide(page, '.c-tabs', 400)
   await tap(page, '.c-tabs button >> nth=1')
   await wait(700)
   const skull = '.c-tile[aria-label*="hooded skull"]' // the pink panther is the next photo
